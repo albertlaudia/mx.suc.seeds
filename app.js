@@ -66,14 +66,22 @@ function updateCartBadge() {
   document.querySelectorAll("[data-cart-count]").forEach(el => el.textContent = n);
 }
 
-// ─── Selected shipping option (sessionStorage) ───────────────────────────────
-const SHIP_KEY = "sindo_ship_v1";
-function getShipping() {
-  try { return JSON.parse(sessionStorage.getItem(SHIP_KEY)) || SHIPPING.options[0]; }
-  catch { return SHIPPING.options[0]; }
-}
-function setShipping(opt) {
-  sessionStorage.setItem(SHIP_KEY, JSON.stringify(opt));
+// ─── Single shipping option — Sindo Shipping × S$20/kg ──────────────────────
+// Fee is computed from cart weight, not stored (one option only).
+function getShipping(items) {
+  const opt = SHIPPING.options[0];
+  const itemsList = items || (typeof cartItems === "function" ? cartItems() : []);
+  const calc = window.computeShippingFee(itemsList);
+  return {
+    id: opt.id,
+    courier: opt.courier,
+    etaDays: opt.etaDays,
+    note: opt.note,
+    priceIdr: calc.feeIdr,
+    totalKg: calc.totalKg,
+    totalGrams: calc.totalGrams,
+    ratePerKg: calc.ratePerKg
+  };
 }
 
 // ─── Toast ──────────────────────────────────────────────────────────────────
@@ -196,7 +204,7 @@ function renderProduct() {
           <a class="btn-wa-lg" href="${waDirect(p)}" target="_blank" rel="noreferrer">💬 Tanya via WhatsApp</a>
 
           <div class="pdp-perks">
-            <div class="perk"><span>🚚</span><span>Dikirim dari Singapura via <strong>${SHIPPING.partner}</strong> (5-10 hari)</span></div>
+            <div class="perk"><span>🚚</span><span>Dikirim dari Singapura via <strong>${SHIPPING.partner}</strong> · S$20/kg, bea cukai termasuk</span></div>
             <div class="perk"><span>💳</span><span>Bayar via QRIS / BCA / VA setelah pesan</span></div>
             <div class="perk"><span>✓</span><span>Garansi 100% Original iHerb</span></div>
             <div class="perk"><span>📦</span><span>Nomor resi otomatis begitu pembayaran dikonfirmasi</span></div>
@@ -243,7 +251,7 @@ function renderCart() {
   }
 
   const subtotal = cartTotal();
-  const ship = getShipping();
+  const ship = getShipping(items);
   c.innerHTML = `
     <div class="cart-wrap">
       <h1 style="font-size:24px;font-weight:700;margin-bottom:8px;">Keranjang</h1>
@@ -268,7 +276,7 @@ function renderCart() {
       `).join("")}
       <div class="cart-summary">
         <div class="row"><span class="muted">Subtotal</span><strong>${formatIdr(subtotal)}</strong></div>
-        <div class="row"><span class="muted">Pengiriman (${escapeHtml(ship.courier)})</span><strong>${formatIdr(ship.priceIdr)}</strong></div>
+        <div class="row"><span class="muted">Pengiriman (${escapeHtml(ship.courier)} · ${ship.totalKg} kg × ${formatIdr(ship.ratePerKg)}/kg)</span><strong>${formatIdr(ship.priceIdr)}</strong></div>
         <div class="row total"><span>Total</span><span>${formatIdr(subtotal + ship.priceIdr)}</span></div>
         <a href="checkout.html" class="btn-primary" style="display:block;text-align:center;margin-top:16px;text-decoration:none;">Lanjut ke Pembayaran →</a>
       </div>
@@ -348,22 +356,20 @@ function renderCheckout() {
           </div>
 
           <div class="form-section">
-            <h3>Opsi Pengiriman (${escapeHtml(SHIPPING.partner)})</h3>
+            <h3>Pengiriman (${escapeHtml(SHIPPING.partner)})</h3>
             <div class="ship-options">
-              ${SHIPPING.options.map(opt => `
-                <label class="ship-opt ${opt.id === ship.id ? 'selected' : ''}" data-ship-radio="${opt.id}">
-                  <input type="radio" name="ship" value="${opt.id}" ${opt.id === ship.id ? 'checked' : ''}/>
-                  <div class="ship-radio"></div>
-                  <div class="ship-body">
-                    <div class="ship-courier">
-                      ${escapeHtml(opt.courier)}
-                      ${opt.badge ? `<span class="ship-badge">${escapeHtml(opt.badge)}</span>` : ''}
-                    </div>
-                    <div class="ship-meta">${escapeHtml(opt.etaDays)} · ${escapeHtml(opt.note)}</div>
+              <div class="ship-opt selected" data-ship-fixed>
+                <div class="ship-radio"></div>
+                <div class="ship-body">
+                  <div class="ship-courier">
+                    ${escapeHtml(SHIPPING.options[0].courier)}
+                    <span class="ship-badge">S$20/kg · Bea cukai termasuk</span>
                   </div>
-                  <div class="ship-price">${formatIdr(opt.priceIdr)}</div>
-                </label>
-              `).join("")}
+                  <div class="ship-meta">${escapeHtml(SHIPPING.options[0].etaDays)} · Berat paket: <strong>${ship.totalKg} kg</strong> (${(ship.totalGrams/1000).toFixed(2)} kg aktual) · ${escapeHtml(SHIPPING.options[0].note)}</div>
+                </div>
+                <div class="ship-price">${formatIdr(ship.priceIdr)}</div>
+              </div>
+              <p style="font-size:12px;color:#6b7280;margin-top:8px;">ℹ Berat dibulatkan ke atas ke kg terdekat (praktik standar kurir). Dihitung dari berat kemasan masing-masing produk di keranjang Anda.</p>
             </div>
           </div>
 
@@ -393,7 +399,7 @@ function renderCheckout() {
           <div class="divider"></div>
           <div class="summary-totals">
             <div class="row"><span>Subtotal</span><span>${formatIdr(subtotal)}</span></div>
-            <div class="row"><span>Pengiriman</span><span>${formatIdr(ship.priceIdr)}</span></div>
+            <div class="row"><span>Pengiriman (${ship.totalKg} kg × ${formatIdr(ship.ratePerKg)}/kg)</span><span>${formatIdr(ship.priceIdr)}</span></div>
             <div class="row total"><span>Total</span><span>${formatIdr(subtotal + ship.priceIdr)}</span></div>
           </div>
           <div style="margin-top:16px;padding:12px;background:white;border-radius:8px;font-size:12px;color:#6b7280;">
@@ -407,14 +413,7 @@ function renderCheckout() {
     </div>
   `;
 
-  // Wire up shipping option picker
-  document.querySelectorAll("[data-ship-radio]").forEach(el => {
-    el.onclick = () => {
-      const id = el.dataset.shipRadio;
-      const opt = SHIPPING.options.find(o => o.id === id);
-      if (opt) { setShipping(opt); renderCheckout(); }
-    };
-  });
+  // No shipping picker — single option, fee auto-computed from cart weight
 
   document.getElementById("checkout-form").addEventListener("submit", (e) => {
     e.preventDefault();

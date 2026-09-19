@@ -18,12 +18,13 @@ window.PRODUCTS = [
     "size": "180 tablets",
     "description": "Highly bioavailable magnesium chelate. Supports muscle, nerve, and bone health. 100% chelated for maximum absorption.",
     "ingredients": "Magnesium (from 2,000 mg Magnesium Bisglycinate) 200 mg per 2 tablets",
-    "url": "https://www.iherb.com/pr/now-foods-magnesium-glycinate-180-tablets-100-mg-per-tablet/88819"
+    "url": "https://www.iherb.com/pr/now-foods-magnesium-glycinate-180-tablets-100-mg-per-tablet/88819",
+    "weightGrams": 280
   },
   {
     "id": "now-mag-glyc-bp-180",
     "brand": "NOW Foods",
-    "title": "NOW Foods, Magnesium Glycinate With BioPerine®, 180 Veg Capsules",
+    "title": "NOW Foods, Magnesium Glycinate With BioPerine\u00ae, 180 Veg Capsules",
     "category": "Magnesium Glycinate",
     "priceUsd": 18.36,
     "priceIdr": 411264,
@@ -32,9 +33,10 @@ window.PRODUCTS = [
     "gtin": "733739012876",
     "image": "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/now/now01287/g/1.jpg",
     "size": "180 veg caps",
-    "description": "Magnesium glycinate enhanced with BioPerine® for superior absorption. Gentle on stomach.",
+    "description": "Magnesium glycinate enhanced with BioPerine\u00ae for superior absorption. Gentle on stomach.",
     "ingredients": "Magnesium (elemental) 200 mg, Black Pepper Fruit Extract 2.5 mg",
-    "url": "https://www.iherb.com/pr/now-foods-magnesium-glycinate-with-bioperine-180-veg-capsules/143369"
+    "url": "https://www.iherb.com/pr/now-foods-magnesium-glycinate-with-bioperine-180-veg-capsules/143369",
+    "weightGrams": 220
   },
   {
     "id": "now-mag-glyc-90",
@@ -50,7 +52,8 @@ window.PRODUCTS = [
     "size": "90 tablets",
     "description": "Smaller bottle of NOW's flagship magnesium glycinate. Great for first-time try.",
     "ingredients": "Magnesium (from 2,000 mg Magnesium Bisglycinate) 200 mg per 2 tablets",
-    "url": "https://www.iherb.com/pr/now-foods-magnesium-glycinate-90-tablets-100-mg-per-tablet/36508"
+    "url": "https://www.iherb.com/pr/now-foods-magnesium-glycinate-90-tablets-100-mg-per-tablet/36508",
+    "weightGrams": 180
   },
   {
     "id": "cgn-d3-2000",
@@ -66,7 +69,8 @@ window.PRODUCTS = [
     "size": "90 softgels",
     "description": "High-potency vitamin D3 for bone, immune, and mood support. Best-selling D3 on iHerb with 150K+ reviews.",
     "ingredients": "Vitamin D3 (as Cholecalciferol) 50 mcg (2,000 IU)",
-    "url": "https://www.iherb.com/pr/california-gold-nutrition-vitamin-d3-50-mcg-2-000-iu-90-fish-gelatin-softgels/36026"
+    "url": "https://www.iherb.com/pr/california-gold-nutrition-vitamin-d3-50-mcg-2-000-iu-90-fish-gelatin-softgels/36026",
+    "weightGrams": 120
   },
   {
     "id": "cgn-defender4",
@@ -82,12 +86,13 @@ window.PRODUCTS = [
     "size": "60 veggie caps",
     "description": "4-in-1 immune stack: Vit C + Vit D + Zinc + Selenium. Best-selling immune blend on iHerb.",
     "ingredients": "Vitamin C 250 mg, Vitamin D3 25 mcg, Zinc 7.5 mg, Selenium 25 mcg",
-    "url": "https://www.iherb.com/pr/california-gold-nutrition-defender-4-with-vitamin-c-vitamin-d-zinc-selenium-60-veggie-capsules/146673"
+    "url": "https://www.iherb.com/pr/california-gold-nutrition-defender-4-with-vitamin-c-vitamin-d-zinc-selenium-60-veggie-capsules/146673",
+    "weightGrams": 140
   },
   {
     "id": "cgn-goldc-powder",
     "brand": "California Gold Nutrition",
-    "title": "California Gold Nutrition, Gold C® Powder, USP Grade Vitamin C, 8.5 oz (240 g)",
+    "title": "California Gold Nutrition, Gold C\u00ae Powder, USP Grade Vitamin C, 8.5 oz (240 g)",
     "category": "Vitamin C",
     "priceUsd": 9.63,
     "priceIdr": 215712,
@@ -97,13 +102,14 @@ window.PRODUCTS = [
     "image": "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn00370/g/1.jpg",
     "size": "240 g powder",
     "description": "Pure USP-grade vitamin C powder. Mix into drinks. Great value vs capsules.",
-    "ingredients": "Vitamin C (as Ascorbic Acid) 1,000 mg per ¼ tsp",
-    "url": "https://www.iherb.com/pr/california-gold-nutrition-gold-c-powder-usp-grade-vitamin-c-8-5-oz-240-g/33716"
+    "ingredients": "Vitamin C (as Ascorbic Acid) 1,000 mg per \u00bc tsp",
+    "url": "https://www.iherb.com/pr/california-gold-nutrition-gold-c-powder-usp-grade-vitamin-c-8-5-oz-240-g/33716",
+    "weightGrams": 150
   },
   {
     "id": "cgn-goldc-1000",
     "brand": "California Gold Nutrition",
-    "title": "California Gold Nutrition, Gold C®, USP-grade Vitamin C, 1,000 mg, 240 Veggie Capsules",
+    "title": "California Gold Nutrition, Gold C\u00ae, USP-grade Vitamin C, 1,000 mg, 240 Veggie Capsules",
     "category": "Vitamin C",
     "priceUsd": 16.96,
     "priceIdr": 379904,
@@ -114,12 +120,13 @@ window.PRODUCTS = [
     "size": "240 veggie caps",
     "description": "Top-10 best-selling product on iHerb. 1g vitamin C per capsule.",
     "ingredients": "Vitamin C (as Ascorbic Acid) 1,000 mg",
-    "url": "https://www.iherb.com/pr/california-gold-nutrition-gold-c-usp-grade-vitamin-c-1-000-mg-240-veggie-capsules/61865"
+    "url": "https://www.iherb.com/pr/california-gold-nutrition-gold-c-usp-grade-vitamin-c-1-000-mg-240-veggie-capsules/61865",
+    "weightGrams": 150
   },
   {
     "id": "cgn-buffered-c",
     "brand": "California Gold Nutrition",
-    "title": "California Gold Nutrition, Buffered Gold C®, GOLD Standard Sodium Ascorbate Vitamin C, 240 Veggie Capsules",
+    "title": "California Gold Nutrition, Buffered Gold C\u00ae, GOLD Standard Sodium Ascorbate Vitamin C, 240 Veggie Capsules",
     "category": "Vitamin C",
     "priceUsd": 20.15,
     "priceIdr": 451360,
@@ -128,9 +135,10 @@ window.PRODUCTS = [
     "gtin": "898392011208",
     "image": "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn00843/g/1.jpg",
     "size": "240 veggie caps",
-    "description": "Buffered (non-acidic) vitamin C — gentler on sensitive stomachs.",
+    "description": "Buffered (non-acidic) vitamin C \u2014 gentler on sensitive stomachs.",
     "ingredients": "Vitamin C (as Sodium Ascorbate) 1,000 mg",
-    "url": "https://www.iherb.com/pr/california-gold-nutrition-buffered-gold-c-gold-standard-sodium-ascorbate-vitamin-c-240-veggie-capsules/84570"
+    "url": "https://www.iherb.com/pr/california-gold-nutrition-buffered-gold-c-gold-standard-sodium-ascorbate-vitamin-c-240-veggie-capsules/84570",
+    "weightGrams": 150
   },
   {
     "id": "cgn-collagen",
@@ -146,12 +154,13 @@ window.PRODUCTS = [
     "size": "250 tablets",
     "description": "Hydrolyzed bovine collagen with vitamin C for skin, hair, nails, joint support. 250 tablets = 8+ months supply.",
     "ingredients": "Collagen (Bovine) 1,000 mg, Vitamin C 30 mg",
-    "url": "https://www.iherb.com/pr/california-gold-nutrition-hydrolyzed-collagen-peptides-type-i-iii-and-vitamin-c-250-tablets/77593"
+    "url": "https://www.iherb.com/pr/california-gold-nutrition-hydrolyzed-collagen-peptides-type-i-iii-and-vitamin-c-250-tablets/77593",
+    "weightGrams": 360
   },
   {
     "id": "cgn-boneboost",
     "brand": "California Gold Nutrition",
-    "title": "California Gold Nutrition, Bone Boost® with Calcium, Magnesium, Vitamin C and Potassium, 120 Tablets",
+    "title": "California Gold Nutrition, Bone Boost\u00ae with Calcium, Magnesium, Vitamin C and Potassium, 120 Tablets",
     "category": "Bone & Joint",
     "priceUsd": 26.29,
     "priceIdr": 588896,
@@ -162,7 +171,8 @@ window.PRODUCTS = [
     "size": "120 tablets",
     "description": "4-mineral bone formula: Calcium + Magnesium + Vitamin C + Potassium. #3 in Bone Formulas on iHerb.",
     "ingredients": "Calcium 333 mg, Magnesium 133 mg, Vitamin C 50 mg, Potassium 33 mg",
-    "url": "https://www.iherb.com/pr/california-gold-nutrition-bone-boost-with-calcium-magnesium-vitamin-c-and-potassium-120-tablets/109120"
+    "url": "https://www.iherb.com/pr/california-gold-nutrition-bone-boost-with-calcium-magnesium-vitamin-c-and-potassium-120-tablets/109120",
+    "weightGrams": 150
   },
   {
     "id": "cgn-prenatal",
@@ -178,7 +188,8 @@ window.PRODUCTS = [
     "size": "60 softgels",
     "description": "Comprehensive prenatal multivitamin with Alpha Lipoic Acid. Top-10 in Prenatal Multivitamins.",
     "ingredients": "Vitamin A, C, D, E, K, B-complex, Iron, Iodine, Magnesium, Zinc, Alpha Lipoic Acid",
-    "url": "https://www.iherb.com/pr/california-gold-nutrition-prenatal-multivitamin-with-alpha-lipoic-acid-60-fish-gelatin-softgel/89039"
+    "url": "https://www.iherb.com/pr/california-gold-nutrition-prenatal-multivitamin-with-alpha-lipoic-acid-60-fish-gelatin-softgel/89039",
+    "weightGrams": 150
   }
 ];
 
@@ -207,44 +218,32 @@ window.TENANT = {
   locale: "id-ID"
 };
 
-// ─── Sindo Shipping — delivery partner ──────────────────────────────────────
-// Two-sided logistics from /workspace/sindo-shipping/ — public tracking,
-// customer-facing 5-stage lifecycle matching real SG→IDN flow.
+// ─── Sindo Shipping — single option, weight-based pricing ───────────────────
+// One shipping partner: Sindo Shipping, S$20/kg.
+// 1 SGD ≈ 16,000 IDR → Rp 320,000/kg. Fractional kg billed at the next whole kg
+// (standard SG→IDN courier practice — packages round UP to the nearest kg).
 //
-// The 8 internal stages from the Sindo platform are collapsed into 5
-// customer-visible stages to match how Sindo Wellness actually fulfils:
-//   1. manually_ordered_from_iherb — Sindo staffer places the order on iHerb
-//                                       after payment confirmed
-//   2. sindo_sg_warehouse         — package arrives at Sindo SG hub (Yishun)
-//   3. sindo_id_warehouse         — package cleared customs, in ID hub
-//   4. transit                    — last-mile courier (JNE JIK / SiCepat / J&T)
-//   5. delivered                  — customer address (confirmed POD)
+// 5-stage customer-facing lifecycle:
+//   1. pending                    — order received, awaiting payment
+//   2. manually_ordered_from_iherb — Sindo staffer places the order on iHerb
+//   3. sindo_sg_warehouse         — package arrives at Sindo SG hub (Yishun)
+//   4. sindo_id_warehouse         — package cleared customs, in ID hub
+//   5. transit                    — last-mile courier to customer address
+//   6. delivered                  — customer address (confirmed POD)
 window.SHIPPING = {
   partner: "Sindo Shipping",
   apiBase: "https://api.sindo.id/v1", // mock for preview
   publicTracking: "https://sindo.id/track",
+  pricingModel: "weight",
+  ratePerKgSgd: 20,                     // S$20 per kg
+  ratePerKgIdr: 320000,                 // Rp 320,000 per kg (S$20 × 16,000)
+  sgdToIdr: 16000,                      // IDR rate used for pricing
   options: [
     {
-      id: "sindo-jne-jik",
-      courier: "Sindo Shipping × JNE JIK",
+      id: "sindo-shipping",
+      courier: "Sindo Shipping",
       etaDays: "5-7 hari kerja",
-      priceIdr: 15000,
-      note: "Paling cepat ke Jakarta. Bea cukai termasuk.",
-      badge: "Paling Direkomendasikan"
-    },
-    {
-      id: "sindo-sicepat",
-      courier: "Sindo Shipping × SiCepat",
-      etaDays: "6-8 hari kerja",
-      priceIdr: 12000,
-      note: "Lebih murah, sedikit lebih lambat."
-    },
-    {
-      id: "sindo-jnt",
-      courier: "Sindo Shipping × J&T Express",
-      etaDays: "7-10 hari kerja",
-      priceIdr: 10000,
-      note: "Ekonomis untuk luar Jawa."
+      note: "Konsolidasi dari gudang Singapura (Yishun) → Batam → alamat Anda. Bea cukai termasuk."
     }
   ],
   // 5-stage customer-facing lifecycle (matches real Sindo fulfilment flow)
@@ -256,6 +255,19 @@ window.SHIPPING = {
     { id: "transit",                       label: "Sedang Diantar",          desc: "Kurir lokal mengantar ke alamat Anda." },
     { id: "delivered",                     label: "Terkirim",                desc: "Paket sudah diterima penerima." }
   ]
+};
+
+// Helper used by cart/checkout — computes shipping fee from cart items.
+// Returns { feeIdr, totalKg, ratePerKg }.
+window.computeShippingFee = function(items) {
+  const totalGrams = items.reduce((sum, i) => {
+    const product = window.PRODUCTS.find(p => p.id === i.id);
+    return sum + (product ? (product.weightGrams || 100) * i.qty : 100 * i.qty);
+  }, 0);
+  // Round UP to the next whole kg (standard courier billing)
+  const totalKg = Math.max(1, Math.ceil(totalGrams / 1000));
+  const feeIdr = totalKg * window.SHIPPING.ratePerKgIdr;
+  return { feeIdr, totalKg, totalGrams, ratePerKg: window.SHIPPING.ratePerKgIdr };
 };
 
 // Mock tracking data so /track.html demo works for ANY tracking number
