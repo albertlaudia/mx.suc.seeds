@@ -169,6 +169,9 @@ img { color: transparent; }
 .ship-courier { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ship-badge { background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; }
 .ship-meta { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.ship-line { font-size: 11px; color: #6b7280; margin-top: 4px; }
+.ship-breakdown { margin-top: 12px; background: #f9fafb; border-radius: 8px; padding: 12px; font-size: 13px; color: #374151; }
+.ship-breakdown .ship-line-item:last-child { padding-top: 8px !important; }
 .ship-price { font-weight: 700; color: #1a1a1a; font-size: 14px; }
 
 /* Order success */

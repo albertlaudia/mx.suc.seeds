@@ -66,7 +66,7 @@ function updateCartBadge() {
   document.querySelectorAll("[data-cart-count]").forEach(el => el.textContent = n);
 }
 
-// ─── Single shipping option — Sindo Shipping × S$20/kg ──────────────────────
+// ─── Single shipping option — Sindo Shipping × S$20/100g ─────────────────────
 // Fee is computed from cart weight, not stored (one option only).
 function getShipping(items) {
   const opt = SHIPPING.options[0];
@@ -78,9 +78,9 @@ function getShipping(items) {
     etaDays: opt.etaDays,
     note: opt.note,
     priceIdr: calc.feeIdr,
-    totalKg: calc.totalKg,
     totalGrams: calc.totalGrams,
-    ratePerKg: calc.ratePerKg
+    ratePer100g: calc.ratePer100g,
+    lineItems: calc.lineItems
   };
 }
 
@@ -204,7 +204,7 @@ function renderProduct() {
           <a class="btn-wa-lg" href="${waDirect(p)}" target="_blank" rel="noreferrer">💬 Tanya via WhatsApp</a>
 
           <div class="pdp-perks">
-            <div class="perk"><span>🚚</span><span>Dikirim dari Singapura via <strong>${SHIPPING.partner}</strong> · S$20/kg, bea cukai termasuk</span></div>
+            <div class="perk"><span>🚚</span><span>Dikirim dari Singapura via <strong>${SHIPPING.partner}</strong> · S$20/100g, bea cukai termasuk</span></div>
             <div class="perk"><span>💳</span><span>Bayar via QRIS / BCA / VA setelah pesan</span></div>
             <div class="perk"><span>✓</span><span>Garansi 100% Original iHerb</span></div>
             <div class="perk"><span>📦</span><span>Nomor resi otomatis begitu pembayaran dikonfirmasi</span></div>
@@ -256,12 +256,15 @@ function renderCart() {
     <div class="cart-wrap">
       <h1 style="font-size:24px;font-weight:700;margin-bottom:8px;">Keranjang</h1>
       <div style="color:#6b7280;font-size:13px;margin-bottom:16px;">${items.length} produk</div>
-      ${items.map(i => `
+      ${items.map(i => {
+        const li = ship.lineItems.find(l => l.id === i.id) || { weightGrams: 0, shippingIdr: 0 };
+        return `
         <div class="cart-row">
           <img ${lazyImgAttrs()} src="${i.image}" alt="" onerror="this.style.opacity=0"/>
           <div class="info">
             <div class="title">${escapeHtml(i.title)}</div>
             <div class="meta">${escapeHtml(i.brand)} · ${escapeHtml(i.size || '')} · GTIN ${escapeHtml(i.gtin)}</div>
+            <div class="ship-line">📦 Berat: ${li.weightGrams}g × Rp ${formatIdr(ship.ratePer100g).replace('Rp\xa0','').replace('Rp ','')}/100g = <strong>${formatIdr(li.shippingIdr)}</strong></div>
           </div>
           <div class="qty">
             <button data-cart-dec="${i.id}">−</button>
@@ -273,10 +276,10 @@ function renderCart() {
             <button class="remove" data-cart-rm="${i.id}">Hapus</button>
           </div>
         </div>
-      `).join("")}
+      `}).join("")}
       <div class="cart-summary">
         <div class="row"><span class="muted">Subtotal</span><strong>${formatIdr(subtotal)}</strong></div>
-        <div class="row"><span class="muted">Pengiriman (${escapeHtml(ship.courier)} · ${ship.totalKg} kg × ${formatIdr(ship.ratePerKg)}/kg)</span><strong>${formatIdr(ship.priceIdr)}</strong></div>
+        <div class="row"><span class="muted">Pengiriman (${ship.totalGrams}g × Rp ${formatIdr(ship.ratePer100g).replace('Rp\xa0','').replace('Rp ','')}/100g)</span><strong>${formatIdr(ship.priceIdr)}</strong></div>
         <div class="row total"><span>Total</span><span>${formatIdr(subtotal + ship.priceIdr)}</span></div>
         <a href="checkout.html" class="btn-primary" style="display:block;text-align:center;margin-top:16px;text-decoration:none;">Lanjut ke Pembayaran →</a>
       </div>
@@ -363,13 +366,28 @@ function renderCheckout() {
                 <div class="ship-body">
                   <div class="ship-courier">
                     ${escapeHtml(SHIPPING.options[0].courier)}
-                    <span class="ship-badge">S$20/kg · Bea cukai termasuk</span>
+                    <span class="ship-badge">S$20/100g · Bea cukai termasuk</span>
                   </div>
-                  <div class="ship-meta">${escapeHtml(SHIPPING.options[0].etaDays)} · Berat paket: <strong>${ship.totalKg} kg</strong> (${(ship.totalGrams/1000).toFixed(2)} kg aktual) · ${escapeHtml(SHIPPING.options[0].note)}</div>
+                  <div class="ship-meta">${escapeHtml(SHIPPING.options[0].etaDays)} · Total berat paket: <strong>${ship.totalGrams}g</strong> · ${escapeHtml(SHIPPING.options[0].note)}</div>
                 </div>
                 <div class="ship-price">${formatIdr(ship.priceIdr)}</div>
               </div>
-              <p style="font-size:12px;color:#6b7280;margin-top:8px;">ℹ Berat dibulatkan ke atas ke kg terdekat (praktik standar kurir). Dihitung dari berat kemasan masing-masing produk di keranjang Anda.</p>
+              <div class="ship-breakdown" style="margin-top:12px;background:#f9fafb;border-radius:8px;padding:12px;font-size:13px;color:#374151;">
+                <div style="font-weight:600;margin-bottom:8px;">📋 Rincian pengiriman per item</div>
+                ${ship.lineItems.map(li => {
+                  const product = PRODUCTS.find(p => p.id === li.id);
+                  const title = product ? product.title.split(',')[0] : li.id;
+                  return `
+                    <div class="ship-line-item" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #e5e7eb;">
+                      <span>${escapeHtml(title)} × ${li.qty} <span style="color:#6b7280;">(${li.weightGrams}g)</span></span>
+                      <strong>${formatIdr(li.shippingIdr)}</strong>
+                    </div>`;
+                }).join("")}
+                <div class="ship-line-item" style="display:flex;justify-content:space-between;padding:8px 0 0;margin-top:4px;border-top:2px solid #d1d5db;border-bottom:none;font-weight:600;">
+                  <span>Total ${ship.totalGrams}g × Rp ${formatIdr(ship.ratePer100g).replace('Rp\xa0','').replace('Rp ','')}/100g</span>
+                  <strong>${formatIdr(ship.priceIdr)}</strong>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -399,7 +417,7 @@ function renderCheckout() {
           <div class="divider"></div>
           <div class="summary-totals">
             <div class="row"><span>Subtotal</span><span>${formatIdr(subtotal)}</span></div>
-            <div class="row"><span>Pengiriman (${ship.totalKg} kg × ${formatIdr(ship.ratePerKg)}/kg)</span><span>${formatIdr(ship.priceIdr)}</span></div>
+            <div class="row"><span>Pengiriman (${ship.totalGrams}g × Rp ${formatIdr(ship.ratePer100g).replace('Rp\xa0','').replace('Rp ','')}/100g)</span><span>${formatIdr(ship.priceIdr)}</span></div>
             <div class="row total"><span>Total</span><span>${formatIdr(subtotal + ship.priceIdr)}</span></div>
           </div>
           <div style="margin-top:16px;padding:12px;background:white;border-radius:8px;font-size:12px;color:#6b7280;">

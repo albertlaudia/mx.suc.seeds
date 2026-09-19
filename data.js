@@ -218,10 +218,10 @@ window.TENANT = {
   locale: "id-ID"
 };
 
-// ─── Sindo Shipping — single option, weight-based pricing ───────────────────
-// One shipping partner: Sindo Shipping, S$20/kg.
-// 1 SGD ≈ 16,000 IDR → Rp 320,000/kg. Fractional kg billed at the next whole kg
-// (standard SG→IDN courier practice — packages round UP to the nearest kg).
+// ─── Sindo Shipping — single option, per-100g weight-based pricing ──────────
+// One shipping partner: Sindo Shipping, S$20 per 100g (Rp 3.200/100g).
+// 1 SGD ≈ 16,000 IDR → Rp 320,000 per kg. No kg ceiling — billing is exact
+// to the gram. Per-item breakdown shows what each line costs.
 //
 // 5-stage customer-facing lifecycle:
 //   1. pending                    — order received, awaiting payment
@@ -234,10 +234,10 @@ window.SHIPPING = {
   partner: "Sindo Shipping",
   apiBase: "https://api.sindo.id/v1", // mock for preview
   publicTracking: "https://sindo.id/track",
-  pricingModel: "weight",
-  ratePerKgSgd: 20,                     // S$20 per kg
-  ratePerKgIdr: 320000,                 // Rp 320,000 per kg (S$20 × 16,000)
-  sgdToIdr: 16000,                      // IDR rate used for pricing
+  pricingModel: "per100g",
+  ratePer100gSgd: 20,                  // S$20 per 100g
+  ratePer100gIdr: 3200,               // Rp 3,200 per 100g (S$20 × 16,000)
+  sgdToIdr: 16000,                    // IDR rate used for pricing
   options: [
     {
       id: "sindo-shipping",
@@ -258,16 +258,25 @@ window.SHIPPING = {
 };
 
 // Helper used by cart/checkout — computes shipping fee from cart items.
-// Returns { feeIdr, totalKg, ratePerKg }.
+// Returns { feeIdr, totalGrams, ratePer100g, lineItems: [{id, qty, weightGrams, shippingIdr}] }.
 window.computeShippingFee = function(items) {
-  const totalGrams = items.reduce((sum, i) => {
+  const lineItems = items.map(i => {
     const product = window.PRODUCTS.find(p => p.id === i.id);
-    return sum + (product ? (product.weightGrams || 100) * i.qty : 100 * i.qty);
-  }, 0);
-  // Round UP to the next whole kg (standard courier billing)
-  const totalKg = Math.max(1, Math.ceil(totalGrams / 1000));
-  const feeIdr = totalKg * window.SHIPPING.ratePerKgIdr;
-  return { feeIdr, totalKg, totalGrams, ratePerKg: window.SHIPPING.ratePerKgIdr };
+    const weightGrams = (product ? product.weightGrams : 100) * i.qty;
+    // Round up the line weight to the next 100g (smallest billable unit)
+    const billableUnits = Math.max(1, Math.ceil(weightGrams / 100));
+    const shippingIdr = billableUnits * window.SHIPPING.ratePer100gIdr;
+    return {
+      id: i.id,
+      qty: i.qty,
+      weightGrams,
+      billableUnits,
+      shippingIdr
+    };
+  });
+  const totalGrams = lineItems.reduce((s, l) => s + l.weightGrams, 0);
+  const feeIdr = lineItems.reduce((s, l) => s + l.shippingIdr, 0);
+  return { feeIdr, totalGrams, ratePer100g: window.SHIPPING.ratePer100gIdr, lineItems };
 };
 
 // Mock tracking data so /track.html demo works for ANY tracking number
