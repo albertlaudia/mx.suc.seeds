@@ -1,5 +1,5 @@
 // Mock user-journey runtime — Sindo × Sindo Shipping
-// Full journey: home → product → cart → checkout → order → tracking
+// Full journey: home → product → cart → checkout → order → tracking → search → categories → blog
 
 // ─── Currency / formatting ──────────────────────────────────────────────────
 function formatIdr(n) {
@@ -34,7 +34,7 @@ function addToCart(productId, qty = 1) {
   const c = getCart();
   c[productId] = (c[productId] || 0) + qty;
   setCart(c);
-  showToast(`Ditambahkan ke keranjang`);
+  showToast(`Added to cart`);
 }
 function removeFromCart(productId) {
   const c = getCart();
@@ -67,20 +67,14 @@ function updateCartBadge() {
 }
 
 // ─── Single shipping option — Sindo Shipping × S$20/100g ─────────────────────
-// Fee is computed from cart weight, not stored (one option only).
 function getShipping(items) {
   const opt = SHIPPING.options[0];
   const itemsList = items || (typeof cartItems === "function" ? cartItems() : []);
   const calc = window.computeShippingFee(itemsList);
   return {
-    id: opt.id,
-    courier: opt.courier,
-    etaDays: opt.etaDays,
-    note: opt.note,
-    priceIdr: calc.feeIdr,
-    totalGrams: calc.totalGrams,
-    ratePer100g: calc.ratePer100g,
-    lineItems: calc.lineItems
+    id: opt.id, courier: opt.courier, etaDays: opt.etaDays, note: opt.note,
+    priceIdr: calc.feeIdr, totalGrams: calc.totalGrams,
+    ratePer100g: calc.ratePer100g, lineItems: calc.lineItems
   };
 }
 
@@ -88,19 +82,40 @@ function getShipping(items) {
 function showToast(msg) {
   const t = document.createElement("div");
   t.textContent = msg;
-  t.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);";
+  t.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);max-width:90%;text-align:center;";
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2000);
 }
 
-// ─── Shared header (lazy-loaded product card images + brand link) ───────────
+// ─── Shared header / nav ────────────────────────────────────────────────────
 function renderHeader() {
   document.querySelectorAll("header.header .row").forEach(row => {
     const brand = row.querySelector(".brand");
     if (brand) {
-      brand.innerHTML = `Sindo<small>Wellness SG · Dikirim oleh Sindo Shipping</small>`;
+      brand.innerHTML = `Sindo<small>iHerb-sourced · Shipped from Singapore</small>`;
     }
   });
+}
+
+// ─── Product card (shared) ──────────────────────────────────────────────────
+function productCard(p) {
+  const img = p.image || "";
+  return `
+    <div class="card" data-go-product="${escapeHtml(p.id)}">
+      <div class="thumb">
+        <img ${lazyImgAttrs()} src="${img}" alt="${escapeHtml(p.title)}" onerror="this.parentNode.innerHTML='<div class=no-img>no image</div>'"/>
+        <div class="src-badge">iHerb</div>
+      </div>
+      <div class="info">
+        <div class="brand">${escapeHtml(p.brand)}</div>
+        <div class="title">${escapeHtml(p.title)}</div>
+        <div class="rating">★ ${p.rating} <span class="reviews">(${p.reviews.toLocaleString("en-US")})</span></div>
+        <div class="price">${formatIdr(p.priceIdr)}</div>
+        <div class="actions">
+          <button class="btn-add" data-add-cart="${escapeHtml(p.id)}" aria-label="Add to cart">+ Add to cart</button>
+        </div>
+      </div>
+    </div>`;
 }
 
 // ─── Render: home page ──────────────────────────────────────────────────────
@@ -108,9 +123,11 @@ function renderHome() {
   renderHeader();
   const nav = document.getElementById("nav-cats");
   if (nav) {
+    const topCats = CATEGORIES.slice(0, 5);
     nav.innerHTML = [
-      ...CATEGORIES.map(c => `<a href="#cat-${slugify(c)}">${escapeHtml(c)}</a>`),
-      `<a href="track.html" style="color:#0ea5e9;font-weight:600;">📦 Lacak Pesanan</a>`,
+      ...topCats.map(c => `<a href="categories.html#cat-${slugify(c)}">${escapeHtml(c)}</a>`),
+      `<a href="blog.html" style="color:var(--accent);font-weight:600;">📝 Blog</a>`,
+      `<a href="track.html" style="color:#0ea5e9;font-weight:600;">📦 Track</a>`,
     ].join("");
   }
   const banner = document.getElementById("prod-count");
@@ -118,16 +135,14 @@ function renderHome() {
   const ts = document.getElementById("extract-time");
   if (ts) ts.textContent = `${EXTRACT_INFO.extractedAt} · snapshot ${EXTRACT_INFO.snapshotId}`;
 
-  // Featured: top 3 by price
   const featured = [...PRODUCTS].sort((a, b) => b.priceIdr - a.priceIdr).slice(0, 3);
   document.getElementById("featured").innerHTML = featured.map(productCard).join("");
 
-  // Group by category
   document.getElementById("cats").innerHTML = CATEGORIES.map(cat => {
     const items = PRODUCTS.filter(p => p.category === cat).sort((a, b) => b.priceIdr - a.priceIdr);
     return `
       <section class="cat" id="cat-${slugify(cat)}">
-        <h2 class="cat-title">${escapeHtml(cat)}</h2>
+        <h2 class="cat-title">${escapeHtml(cat)} <span class="muted">(${items.length})</span></h2>
         <div class="grid">${items.map(productCard).join("")}</div>
       </section>`;
   }).join("");
@@ -158,15 +173,58 @@ function renderProduct() {
   const id = params.get("id");
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) {
-    document.querySelector("main").innerHTML = "<p style='padding:40px;text-align:center;'>Produk tidak ditemukan. <a href='index.html'>Kembali ke toko</a></p>";
+    document.querySelector("main").innerHTML = `
+      <div class="container" style="padding:40px;text-align:center;">
+        <h2>Product not found</h2>
+        <p>The product you're looking for is no longer in our catalog.</p>
+        <p><a class="btn-primary" href="index.html">← Back to store</a></p>
+      </div>`;
     return;
   }
-  document.title = `${p.title} · Sindo`;
+  document.title = `${p.title} · Sindo Wellness`;
+  const canonical = document.querySelector("link[rel=canonical]");
+  if (canonical) canonical.href = `https://seeds.scaleupcrm.com/product.html?id=${p.id}`;
+
+  // Inject per-product structured data (Schema.org Product)
+  let ld = document.querySelector("script[data-ld=product]");
+  if (!ld) {
+    ld = document.createElement("script");
+    ld.type = "application/ld+json";
+    ld.setAttribute("data-ld", "product");
+    document.head.appendChild(ld);
+  }
+  ld.textContent = JSON.stringify({
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": p.title,
+    "image": [p.image, ...(p.additionalImages || [])].filter(Boolean),
+    "description": p.description,
+    "sku": p.gtin || p.id,
+    "gtin13": p.gtin || undefined,
+    "brand": { "@type": "Brand", "name": p.brand },
+    "offers": {
+      "@type": "Offer",
+      "url": `https://seeds.scaleupcrm.com/product.html?id=${p.id}`,
+      "priceCurrency": "IDR",
+      "price": p.priceIdr,
+      "availability": "https://schema.org/InStock",
+      "seller": { "@type": "Organization", "name": "Sindo Wellness" }
+    },
+    "aggregateRating": p.rating ? {
+      "@type": "AggregateRating",
+      "ratingValue": p.rating,
+      "reviewCount": p.reviews
+    } : undefined
+  });
 
   const related = PRODUCTS.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4);
 
   document.querySelector("main").innerHTML = `
-    <div class="breadcrumb"><a href="index.html">Toko</a> &rsaquo; <a href="index.html#cat-${slugify(p.category)}">${escapeHtml(p.category)}</a> &rsaquo; <span>${escapeHtml(p.title.slice(0, 50))}…</span></div>
+    <div class="breadcrumb container">
+      <a href="index.html">Store</a> &rsaquo;
+      <a href="categories.html#cat-${slugify(p.category)}">${escapeHtml(p.category)}</a> &rsaquo;
+      <span>${escapeHtml(p.title.slice(0, 50))}${p.title.length > 50 ? "…" : ""}</span>
+    </div>
     <div class="container">
       <div class="pdp">
         <div class="pdp-img">
@@ -175,14 +233,14 @@ function renderProduct() {
         <div class="pdp-info">
           <div class="pdp-brand">${escapeHtml(p.brand)}</div>
           <h1>${escapeHtml(p.title)}</h1>
-          <div class="pdp-rating">★ ${p.rating} <span style="color:#9ca3af;margin-left:8px;">(${p.reviews.toLocaleString("id-ID")} ulasan)</span></div>
+          <div class="pdp-rating">★ ${p.rating} <span class="muted">(${p.reviews.toLocaleString("en-US")} iHerb reviews)</span></div>
           <div class="pdp-price">${formatIdr(p.priceIdr)}</div>
 
           <a class="pdp-source" href="${p.url}" target="_blank" rel="noopener noreferrer">
             <div class="src-icon">iH</div>
             <div class="src-text">
-              <div class="src-label">Sumber produk</div>
-              <div class="src-host">Lihat di iHerb.com →</div>
+              <div class="src-label">Product source</div>
+              <div class="src-host">View on iHerb.com →</div>
             </div>
             <div class="src-arrow">↗</div>
           </a>
@@ -190,525 +248,548 @@ function renderProduct() {
           <div class="pdp-desc">${escapeHtml(p.description)}</div>
 
           <div class="pdp-ingredients">
-            <strong>Komposisi:</strong> ${escapeHtml(p.ingredients)}
+            <strong>Ingredients:</strong> ${escapeHtml(p.ingredients)}
           </div>
 
           <div class="qty-row">
             <div class="qty">
-              <button data-qty-dec aria-label="Kurangi">−</button>
+              <button data-qty-dec aria-label="Decrease">−</button>
               <input id="qty" type="text" value="1" readonly />
-              <button data-qty-inc aria-label="Tambah">+</button>
+              <button data-qty-inc aria-label="Increase">+</button>
             </div>
-            <button class="btn-primary" data-add-to-cart>🛒 Tambah ke Keranjang</button>
+            <button class="btn-primary" data-add-cart="${escapeHtml(p.id)}" id="pdp-add">Add to cart</button>
           </div>
-          <a class="btn-wa-lg" href="${waDirect(p)}" target="_blank" rel="noreferrer">💬 Tanya via WhatsApp</a>
 
-          <div class="pdp-perks">
-            <div class="perk"><span>🚚</span><span>Dikirim dari Singapura via <strong>${SHIPPING.partner}</strong> · S$20/100g, bea cukai termasuk</span></div>
-            <div class="perk"><span>💳</span><span>Bayar via QRIS / BCA / VA setelah pesan</span></div>
-            <div class="perk"><span>✓</span><span>Garansi 100% Original iHerb</span></div>
-            <div class="perk"><span>📦</span><span>Nomor resi otomatis begitu pembayaran dikonfirmasi</span></div>
+          <div class="pdp-meta">
+            <div><strong>Size:</strong> ${escapeHtml(p.size || "—")}</div>
+            <div><strong>Weight:</strong> ${p.weightGrams}g</div>
+            <div><strong>GTIN:</strong> <span class="mono">${escapeHtml(p.gtin || "—")}</span></div>
           </div>
-          <div style="margin-top:6px;font-size:11px;color:#9ca3af;">GTIN: <span class="mono" style="background:#f3f4f6;padding:2px 6px;border-radius:3px;">${escapeHtml(p.gtin)}</span></div>
+
+          <div class="pdp-disclaimer">
+            Supplements are not medicines. Consult your doctor before use if pregnant, nursing, or under medical treatment.
+          </div>
         </div>
       </div>
 
       ${related.length ? `
-        <section class="section" style="padding-top:48px;">
-          <h2 class="section-title">Produk Serupa</h2>
+        <section style="margin: 48px 0;">
+          <h2 style="margin-bottom: 16px;">Related products</h2>
           <div class="grid">${related.map(productCard).join("")}</div>
         </section>
       ` : ""}
     </div>
   `;
 
+  // Bind qty + add to cart
   let qty = 1;
-  document.querySelector("[data-qty-inc]").onclick = () => { qty++; document.getElementById("qty").value = qty; };
-  document.querySelector("[data-qty-dec]").onclick = () => { if (qty > 1) { qty--; document.getElementById("qty").value = qty; } };
-  document.querySelector("[data-add-to-cart]").onclick = () => {
-    addToCart(p.id, qty);
-    setTimeout(() => window.location.href = "cart.html", 600);
-  };
+  const qtyEl = document.getElementById("qty");
+  document.querySelector("[data-qty-dec]").onclick = () => { qty = Math.max(1, qty - 1); qtyEl.value = qty; };
+  document.querySelector("[data-qty-inc]").onclick = () => { qty += 1; qtyEl.value = qty; };
+  document.getElementById("pdp-add").onclick = () => addToCart(p.id, qty);
   bindCardEvents();
   updateCartBadge();
 }
 
-// ─── Render: cart ───────────────────────────────────────────────────────────
+// ─── Render: cart page ───────────────────────────────────────────────────────
 function renderCart() {
   renderHeader();
+  const root = document.getElementById("cart-root");
   const items = cartItems();
-  const c = document.querySelector("main");
   if (items.length === 0) {
-    c.innerHTML = `
-      <div class="empty-state">
-        <div style="font-size:48px;color:#d1d5db;">🛒</div>
-        <h2>Keranjang kosong</h2>
-        <p>Tambahkan produk dari toko untuk mulai memesan.</p>
-        <a href="index.html" class="btn-primary" style="display:inline-block;width:auto;margin-top:20px;text-decoration:none;">Mulai Belanja</a>
+    root.innerHTML = `
+      <div class="container empty-cart">
+        <h2>Your cart is empty</h2>
+        <p>Browse our catalog and add products to start an order.</p>
+        <p><a class="btn-primary" href="index.html">Browse products →</a></p>
       </div>`;
     updateCartBadge();
     return;
   }
-
-  const subtotal = cartTotal();
   const ship = getShipping(items);
-  c.innerHTML = `
-    <div class="cart-wrap">
-      <h1 style="font-size:24px;font-weight:700;margin-bottom:8px;">Keranjang</h1>
-      <div style="color:#6b7280;font-size:13px;margin-bottom:16px;">${items.length} produk</div>
-      ${items.map(i => {
-        const li = ship.lineItems.find(l => l.id === i.id) || { weightGrams: 0, shippingIdr: 0 };
-        return `
-        <div class="cart-row">
-          <img ${lazyImgAttrs()} src="${i.image}" alt="" onerror="this.style.opacity=0"/>
-          <div class="info">
-            <div class="title">${escapeHtml(i.title)}</div>
-            <div class="meta">${escapeHtml(i.brand)} · ${escapeHtml(i.size || '')} · GTIN ${escapeHtml(i.gtin)}</div>
-            <div class="ship-line">📦 Berat: ${li.weightGrams}g × Rp ${formatIdr(ship.ratePer100g).replace('Rp\xa0','').replace('Rp ','')}/100g = <strong>${formatIdr(li.shippingIdr)}</strong></div>
-          </div>
-          <div class="qty">
-            <button data-cart-dec="${i.id}">−</button>
-            <input type="text" value="${i.qty}" readonly />
-            <button data-cart-inc="${i.id}">+</button>
-          </div>
-          <div style="text-align:right;">
-            <div class="price-col">${formatIdr(i.lineTotal)}</div>
-            <button class="remove" data-cart-rm="${i.id}">Hapus</button>
-          </div>
-        </div>
-      `}).join("")}
-      <div class="cart-summary">
-        <div class="row"><span class="muted">Subtotal</span><strong>${formatIdr(subtotal)}</strong></div>
-        <div class="row"><span class="muted">Pengiriman (${ship.totalGrams}g × Rp ${formatIdr(ship.ratePer100g).replace('Rp\xa0','').replace('Rp ','')}/100g)</span><strong>${formatIdr(ship.priceIdr)}</strong></div>
-        <div class="row total"><span>Total</span><span>${formatIdr(subtotal + ship.priceIdr)}</span></div>
-        <a href="checkout.html" class="btn-primary" style="display:block;text-align:center;margin-top:16px;text-decoration:none;">Lanjut ke Pembayaran →</a>
-      </div>
-    </div>
-  `;
-
-  document.querySelectorAll("[data-cart-inc]").forEach(el => {
-    el.onclick = () => { const c = getCart(); c[el.dataset.cartInc] = (c[el.dataset.cartInc] || 0) + 1; setCart(c); renderCart(); };
-  });
-  document.querySelectorAll("[data-cart-dec]").forEach(el => {
-    el.onclick = () => { const c = getCart(); c[el.dataset.cartDec] = Math.max(1, (c[el.dataset.cartDec] || 1) - 1); setCart(c); renderCart(); };
-  });
-  document.querySelectorAll("[data-cart-rm]").forEach(el => {
-    el.onclick = () => { removeFromCart(el.dataset.cartRm); renderCart(); };
-  });
-  updateCartBadge();
-}
-
-// ─── Render: checkout ───────────────────────────────────────────────────────
-function renderCheckout() {
-  renderHeader();
-  const items = cartItems();
-  if (items.length === 0) {
-    window.location.href = "cart.html";
-    return;
-  }
-  const subtotal = cartTotal();
-  const ship = getShipping();
-
-  document.querySelector("main").innerHTML = `
-    <div class="container">
-      <div class="steps">
-        <div class="step done">1. Keranjang</div>
-        <div class="step active">2. Pembayaran</div>
-        <div class="step">3. Selesai</div>
-      </div>
-      <div class="checkout">
-        <form id="checkout-form">
-          <div class="form-section">
-            <h3>Informasi Kontak</h3>
-            <div class="field">
-              <label>Nama *</label>
-              <input name="name" required placeholder="Nama lengkap"/>
-            </div>
-            <div class="field">
-              <label>WhatsApp *</label>
-              <input name="phone" required placeholder="+62xxx" value="+62"/>
-            </div>
-            <div class="field">
-              <label>Email</label>
-              <input name="email" type="email" placeholder="untuk notifikasi"/>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3>Alamat Pengiriman</h3>
-            <div class="field">
-              <label>Alamat lengkap *</label>
-              <textarea name="address" required rows="3" placeholder="Jalan, nomor, RT/RW, kelurahan, kecamatan"></textarea>
-            </div>
-            <div class="field-row">
-              <div class="field"><label>Kota *</label><input name="city" required placeholder="Jakarta"/></div>
-              <div class="field"><label>Kode Pos *</label><input name="postcode" required placeholder="12345"/></div>
-            </div>
-            <div class="field">
-              <label>Provinsi</label>
-              <select name="province">
-                <option>DKI Jakarta</option><option>Jawa Barat</option><option>Jawa Tengah</option>
-                <option>Jawa Timur</option><option>Banten</option><option>Yogyakarta</option>
-                <option>Bali</option><option>Sumatera Utara</option><option>Lainnya</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Catatan pesanan (opsional)</label>
-              <textarea name="notes" rows="2" placeholder="Misal: Kirim setelah jam 5 sore, atau request packing"></textarea>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3>Pengiriman (${escapeHtml(SHIPPING.partner)})</h3>
-            <div class="ship-options">
-              <div class="ship-opt selected" data-ship-fixed>
-                <div class="ship-radio"></div>
-                <div class="ship-body">
-                  <div class="ship-courier">
-                    ${escapeHtml(SHIPPING.options[0].courier)}
-                    <span class="ship-badge">S$20/100g · Bea cukai termasuk</span>
-                  </div>
-                  <div class="ship-meta">${escapeHtml(SHIPPING.options[0].etaDays)} · Total berat paket: <strong>${ship.totalGrams}g</strong> · ${escapeHtml(SHIPPING.options[0].note)}</div>
+  root.innerHTML = `
+    <div class="container cart-page">
+      <h1>Your cart</h1>
+      <div class="cart-grid">
+        <div class="cart-items">
+          ${items.map(it => `
+            <div class="cart-row">
+              <img ${lazyImgAttrs(`width="80" height="80"`)} src="${it.image}" alt="${escapeHtml(it.title)}"/>
+              <div class="cart-row-info">
+                <div class="cart-row-brand">${escapeHtml(it.brand)}</div>
+                <div class="cart-row-title"><a href="product.html?id=${it.id}">${escapeHtml(it.title)}</a></div>
+                <div class="cart-row-meta">${escapeHtml(it.size || "")} · ${it.weightGrams}g</div>
+                <div class="cart-row-shipping">📦 ${it.qty} × ${it.weightGrams}g × Rp 3.200/100g = <strong>${formatIdr(Math.ceil((it.qty * it.weightGrams) / 100) * 3200)}</strong></div>
+              </div>
+              <div class="cart-row-controls">
+                <div class="qty">
+                  <button data-cart-dec="${escapeHtml(it.id)}" aria-label="Decrease">−</button>
+                  <input value="${it.qty}" readonly />
+                  <button data-cart-inc="${escapeHtml(it.id)}" aria-label="Increase">+</button>
                 </div>
-                <div class="ship-price">${formatIdr(ship.priceIdr)}</div>
+                <div class="cart-row-price">${formatIdr(it.lineTotal)}</div>
+                <button class="cart-row-remove" data-cart-remove="${escapeHtml(it.id)}">Remove</button>
               </div>
-              <div class="ship-breakdown" style="margin-top:12px;background:#f9fafb;border-radius:8px;padding:12px;font-size:13px;color:#374151;">
-                <div style="font-weight:600;margin-bottom:8px;">📋 Rincian pengiriman per item</div>
-                ${ship.lineItems.map(li => {
-                  const product = PRODUCTS.find(p => p.id === li.id);
-                  const title = product ? product.title.split(',')[0] : li.id;
-                  return `
-                    <div class="ship-line-item" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #e5e7eb;">
-                      <span>${escapeHtml(title)} × ${li.qty} <span style="color:#6b7280;">(${li.weightGrams}g)</span></span>
-                      <strong>${formatIdr(li.shippingIdr)}</strong>
-                    </div>`;
-                }).join("")}
-                <div class="ship-line-item" style="display:flex;justify-content:space-between;padding:8px 0 0;margin-top:4px;border-top:2px solid #d1d5db;border-bottom:none;font-weight:600;">
-                  <span>Total ${ship.totalGrams}g × Rp ${formatIdr(ship.ratePer100g).replace('Rp\xa0','').replace('Rp ','')}/100g</span>
-                  <strong>${formatIdr(ship.priceIdr)}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3>Metode Pembayaran</h3>
-            <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px;">
-              <strong>💳 Transfer Bank Manual</strong>
-              <p style="font-size:13px;color:#6b7280;margin-top:4px;">Setelah pesan, Anda akan menerima instruksi transfer ke rekening BCA/QRIS/Mandiri. Pesanan dikonfirmasi setelah pembayaran terverifikasi (maks 24 jam). Begitu dikonfirmasi, nomor resi ${escapeHtml(SHIPPING.partner)} akan diterbitkan otomatis.</p>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-primary" style="width:100%;padding:14px;font-size:15px;">Konfirmasi Pesanan →</button>
-        </form>
-
-        <div class="summary-box">
-          <h3>Ringkasan Pesanan</h3>
-          ${items.map(i => `
-            <div class="summary-item">
-              <img ${lazyImgAttrs()} src="${i.image}" alt="" onerror="this.style.opacity=0"/>
-              <div class="title-col">
-                <div class="t">${escapeHtml(i.title)}</div>
-                <div class="q">× ${i.qty}</div>
-              </div>
-              <div class="p">${formatIdr(i.lineTotal)}</div>
             </div>
           `).join("")}
-          <div class="divider"></div>
-          <div class="summary-totals">
-            <div class="row"><span>Subtotal</span><span>${formatIdr(subtotal)}</span></div>
-            <div class="row"><span>Pengiriman (${ship.totalGrams}g × Rp ${formatIdr(ship.ratePer100g).replace('Rp\xa0','').replace('Rp ','')}/100g)</span><span>${formatIdr(ship.priceIdr)}</span></div>
-            <div class="row total"><span>Total</span><span>${formatIdr(subtotal + ship.priceIdr)}</span></div>
+        </div>
+        <div class="cart-summary">
+          <h3>Order summary</h3>
+          <div class="row"><span>Subtotal (${items.reduce((s, i) => s + i.qty, 0)} items)</span><span>${formatIdr(cartTotal())}</span></div>
+          <div class="row">
+            <span>Shipping (${ship.totalGrams}g)<br><span class="muted">Sindo Shipping × S$20/100g</span></span>
+            <span>${formatIdr(ship.priceIdr)}</span>
           </div>
-          <div style="margin-top:16px;padding:12px;background:white;border-radius:8px;font-size:12px;color:#6b7280;">
-            ✓ Bayar di langkah berikutnya<br/>
-            ✓ Pesanan aman selama 24 jam<br/>
-            ✓ Bebas biaya admin<br/>
-            ✓ Resi otomatis begitu dikonfirmasi
-          </div>
+          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.priceIdr)}</span></div>
+          <a class="btn-primary" href="checkout.html">Proceed to checkout →</a>
+          <p class="muted" style="font-size:12px; margin-top:12px;">Payment by bank transfer. Shipping fee includes customs for shipments up to 1.5 kg.</p>
         </div>
       </div>
     </div>
   `;
 
-  // No shipping picker — single option, fee auto-computed from cart weight
-
-  document.getElementById("checkout-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const customer = Object.fromEntries(fd.entries());
-    const shippingOpt = getShipping();
-    const total = subtotal + shippingOpt.priceIdr;
-    // Generate order + tracking refs
-    const ref = `${TENANT.slug.toUpperCase().slice(0,5)}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
-    const tracking = `SS-${new Date().toISOString().slice(0,7).replace('-','')}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
-    const order = {
-      ref,
-      tracking,
-      shipping: shippingOpt,
-      customer,
-      items: cartItems(),
-      subtotal,
-      shippingFee: shippingOpt.priceIdr,
-      total,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 24*60*60*1000).toISOString(),
-      eta: shippingOpt.etaDays,
-    };
-    sessionStorage.setItem("sindo_last_order", JSON.stringify(order));
-    sessionStorage.setItem(`sindo_track_${tracking}`, JSON.stringify({
-      order,
-      shipment: { currentStage: "pending", events: [], courier: shippingOpt.courier }
-    }));
-    clearCart();
-    window.location.href = `order.html?ref=${ref}`;
+  document.querySelectorAll("[data-cart-inc]").forEach(el => el.onclick = () => {
+    const id = el.dataset.cartInc;
+    const cur = getCart()[id] || 0;
+    updateQty(id, cur + 1);
+    renderCart();
   });
+  document.querySelectorAll("[data-cart-dec]").forEach(el => el.onclick = () => {
+    const id = el.dataset.cartDec;
+    const cur = getCart()[id] || 0;
+    updateQty(id, cur - 1);
+    renderCart();
+  });
+  document.querySelectorAll("[data-cart-remove]").forEach(el => el.onclick = () => {
+    removeFromCart(el.dataset.cartRemove);
+    renderCart();
+  });
+
   updateCartBadge();
 }
 
-// ─── Render: order success ──────────────────────────────────────────────────
-function renderOrder() {
+// ─── Render: checkout page ───────────────────────────────────────────────────
+function renderCheckout() {
   renderHeader();
-  const orderJson = sessionStorage.getItem("sindo_last_order");
-  if (!orderJson) {
-    window.location.href = "index.html";
+  const root = document.getElementById("checkout-root");
+  const items = cartItems();
+  if (items.length === 0) {
+    root.innerHTML = `
+      <div class="container empty-cart">
+        <h2>Your cart is empty</h2>
+        <p><a class="btn-primary" href="index.html">Browse products →</a></p>
+      </div>`;
     return;
   }
-  const o = JSON.parse(orderJson);
+  const ship = getShipping(items);
+  root.innerHTML = `
+    <div class="container checkout-page">
+      <h1>Checkout</h1>
+      <div class="checkout-grid">
+        <form id="checkout-form" class="checkout-form">
+          <h3>Contact information</h3>
+          <label>Full name <input name="name" required autocomplete="name"></label>
+          <label>Email <input name="email" type="email" required autocomplete="email"></label>
+          <label>WhatsApp <input name="phone" type="tel" required placeholder="+62..." autocomplete="tel"></label>
 
-  document.querySelector("main").innerHTML = `
-    <div class="success-wrap">
-      <div class="steps">
-        <div class="step done">1. Keranjang</div>
-        <div class="step done">2. Pembayaran</div>
-        <div class="step active">3. Selesai</div>
-      </div>
-
-      <div class="success-card">
-        <div class="check">✓</div>
-        <h1>Pesanan Berhasil Dibuat</h1>
-        <p style="color:#4b5563;">Pesanan Anda menunggu pembayaran. Begitu dikonfirmasi, ${escapeHtml(SHIPPING.partner)} akan langsung menerbitkan nomor resi.</p>
-        <div class="ref">${escapeHtml(o.ref)}</div>
-        <div style="margin-top:16px;font-size:14px;color:#6b7280;">Total</div>
-        <div style="font-size:32px;font-weight:800;color:#d23f3f;margin-top:4px;">${formatIdr(o.total)}</div>
-        <div style="font-size:12px;color:#9ca3af;margin-top:6px;">Kedaluarsa ${new Date(o.expiresAt).toLocaleString("id-ID")}</div>
-      </div>
-
-      <div class="payment-instructions">
-        <h2>💳 Instruksi Pembayaran</h2>
-        <p style="font-size:13px;color:#92400e;margin-bottom:8px;">Mohon transfer <strong>tepat</strong> sejumlah total di atas dan cantumkan referensi <span style="font-family:monospace;background:#fef3c7;padding:2px 6px;border-radius:4px;">${escapeHtml(o.ref)}</span> pada berita transfer.</p>
-        ${TENANT.banks.map(b => `
-          <div class="bank-card">
-            <div class="label">${escapeHtml(b.label)}</div>
-            <div class="mono">${escapeHtml(b.bank)} · ${escapeHtml(b.accountNumber)}</div>
-            <div class="name">a/n ${escapeHtml(b.accountName)}</div>
-            <button class="copy-btn" data-copy="${escapeHtml(b.accountNumber)}">Salin nomor</button>
+          <h3>Shipping address</h3>
+          <label>Address line 1 <input name="line1" required autocomplete="address-line1"></label>
+          <label>Address line 2 (optional) <input name="line2" autocomplete="address-line2"></label>
+          <div class="grid-2">
+            <label>City <input name="city" required autocomplete="address-level2"></label>
+            <label>Postcode <input name="postcode" required autocomplete="postal-code"></label>
           </div>
-        `).join("")}
-        <a class="wa-cta" href="https://wa.me/${TENANT.whatsappClean}?text=${encodeURIComponent(`Halo ${TENANT.name}, saya sudah transfer untuk pesanan ${o.ref} sebesar ${formatIdr(o.total)}. Mohon dicek.`)}" target="_blank" rel="noreferrer">
-          💬 Kirim Bukti Transfer via WhatsApp
-        </a>
-      </div>
+          <label>Country
+            <select name="country" required>
+              <option value="ID">Indonesia</option>
+              <option value="SG">Singapore</option>
+              <option value="MY">Malaysia</option>
+              <option value="BN">Brunei</option>
+              <option value="TH">Thailand</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </label>
 
-      <div class="tracking-prelude">
-        <h2>📦 Pengiriman oleh ${escapeHtml(SHIPPING.partner)}</h2>
-        <div class="track-card">
-          <div>
-            <div style="font-size:12px;color:#6b7280;">Nomor Resi (otomatis setelah pembayaran)</div>
-            <div class="track-number">${escapeHtml(o.tracking)}</div>
-            <div style="font-size:12px;color:#9ca3af;margin-top:4px;">${escapeHtml(o.shipping.courier)} · ETA ${escapeHtml(o.eta)}</div>
+          <h3>Payment method</h3>
+          <div class="payment-method">
+            <strong>Bank transfer</strong> (BCA · QRIS · GoPay · Mandiri VA)
+            <p class="muted">After you place the order, we'll send you the bank account details via WhatsApp. Once payment is confirmed, your tracking number is issued automatically.</p>
           </div>
-          <a class="btn-track" href="track.html?n=${encodeURIComponent(o.tracking)}">Lacak Pengiriman →</a>
-        </div>
-        <p style="font-size:13px;color:#6b7280;margin-top:12px;">Setelah pembayaran terverifikasi (maks 24 jam), nomor resi ini akan aktif dan Anda bisa melacak paket dari <em>Singapura</em> hingga <em>alamat Anda</em> via ${escapeHtml(SHIPPING.partner)}.</p>
-      </div>
 
-      <div style="text-align:center;margin-top:32px;font-size:13px;color:#6b7280;">
-        Ada pertanyaan? <a href="https://wa.me/${TENANT.whatsappClean}" target="_blank" rel="noreferrer" style="color:#16a34a;font-weight:600;">Chat WhatsApp →</a>
+          <!-- Honeypot — bots fill this, humans never see it -->
+          <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;" aria-hidden="true">
+
+          <label class="terms">
+            <input type="checkbox" name="agree" required>
+            I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>.
+          </label>
+
+          <button type="submit" class="btn-primary btn-large">Place order</button>
+        </form>
+        <aside class="checkout-summary">
+          <h3>Order summary</h3>
+          <div class="checkout-items">
+            ${items.map(it => `
+              <div class="checkout-item">
+                <img ${lazyImgAttrs(`width="40" height="40"`)} src="${it.image}" alt="${escapeHtml(it.title)}"/>
+                <div class="ci-info">
+                  <div class="ci-title">${escapeHtml(it.title.slice(0, 60))}${it.title.length > 60 ? "…" : ""}</div>
+                  <div class="ci-meta">${escapeHtml(it.brand)} · ${it.qty} × ${formatIdr(it.priceIdr)}</div>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+          <div class="row"><span>Subtotal</span><span>${formatIdr(cartTotal())}</span></div>
+          <div class="row"><span>Shipping (${ship.totalGrams}g)</span><span>${formatIdr(ship.priceIdr)}</span></div>
+          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.priceIdr)}</span></div>
+          <details style="margin-top: 12px; font-size: 13px;">
+            <summary>Per-item shipping breakdown</summary>
+            <table style="width:100%; margin-top: 8px; font-size: 12px;">
+              ${ship.lineItems.map(li => `
+                <tr>
+                  <td>${escapeHtml(li.title.slice(0, 30))}${li.title.length > 30 ? "…" : ""} × ${li.qty}</td>
+                  <td style="text-align:right;">${li.weightGrams}g → ${formatIdr(li.shippingIdr)}</td>
+                </tr>
+              `).join("")}
+              <tr style="font-weight:bold;"><td>Total</td><td style="text-align:right;">${formatIdr(ship.priceIdr)}</td></tr>
+            </table>
+          </details>
+        </aside>
       </div>
     </div>
   `;
-  updateCartBadge();
 
-  document.querySelectorAll("[data-copy]").forEach(el => {
-    el.onclick = () => {
-      navigator.clipboard.writeText(el.dataset.copy);
-      showToast("Nomor rekening disalin");
+  document.getElementById("checkout-form").onsubmit = (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const order = {
+      reference: "SINDO-" + Date.now().toString(36).toUpperCase().slice(-5),
+      trackingNumber: "SS-" + new Date().toISOString().slice(0, 7).replace("-", "") + "-" + Math.random().toString(36).toUpperCase().slice(2, 7),
+      createdAt: new Date().toISOString(),
+      customer: {
+        name: fd.get("name"), email: fd.get("email"), phone: fd.get("phone"),
+        address: { line1: fd.get("line1"), line2: fd.get("line2"), city: fd.get("city"), postcode: fd.get("postcode"), country: fd.get("country") }
+      },
+      items: items.map(i => ({ id: i.id, title: i.title, brand: i.brand, image: i.image, qty: i.qty, unitPriceIdr: i.priceIdr, weightGrams: i.weightGrams })),
+      subtotalIdr: cartTotal(),
+      shippingIdr: ship.priceIdr,
+      totalIdr: cartTotal() + ship.priceIdr,
+      totalGrams: ship.totalGrams,
+      bankInstructions: "After you place the order, we'll send you the bank account details via WhatsApp. Once payment is confirmed, your tracking number is issued automatically."
     };
-  });
+    sessionStorage.setItem("sindo_last_order", JSON.stringify(order));
+    window.location.href = "order.html";
+  };
+  updateCartBadge();
 }
 
-// ─── Render: tracking page ──────────────────────────────────────────────────
-function renderTrack() {
+// ─── Render: order confirmation page ────────────────────────────────────────
+function renderOrder() {
   renderHeader();
-  const params = new URLSearchParams(location.search);
-  const initialRef = params.get("n") || "";
+  const root = document.getElementById("order-root");
+  const order = JSON.parse(sessionStorage.getItem("sindo_last_order") || "null");
+  if (!order) {
+    root.innerHTML = `
+      <div class="container empty-cart">
+        <h2>No order found</h2>
+        <p>You haven't placed an order in this session.</p>
+        <p><a class="btn-primary" href="index.html">Browse products →</a></p>
+      </div>`;
+    return;
+  }
+  document.title = `Order ${order.reference} · Sindo Wellness`;
+  root.innerHTML = `
+    <div class="container order-page">
+      <div class="order-success">
+        <div class="success-icon">✓</div>
+        <h1>Order placed</h1>
+        <p class="lead">Your order is being processed. We'll send bank-transfer instructions to your WhatsApp within 5 minutes.</p>
+      </div>
 
-  document.querySelector("main").innerHTML = `
-    <div class="container">
-      <div class="track-hero">
-        <h1>📦 Lacak Pengiriman</h1>
-        <p>Masukkan nomor resi dari ${escapeHtml(SHIPPING.partner)} untuk melihat status real-time paket Anda.</p>
-        <form id="track-form" class="track-form">
-          <input id="track-input" name="n" placeholder="contoh: SS-202609-A1B2C" value="${escapeHtml(initialRef)}" autocomplete="off"/>
-          <button type="submit" class="btn-primary">Lacak</button>
-        </form>
-        <div class="track-demos">
-          Coba demo:
-          <button class="demo-btn" data-demo="SS-202609-DEMO1">SS-202609-DEMO1</button>
-          <button class="demo-btn" data-demo="SS-202609-DEMO2">SS-202609-DEMO2</button>
-          <button class="demo-btn" data-demo="SS-202609-DEMO3">SS-202609-DEMO3</button>
+      <div class="order-grid">
+        <div>
+          <div class="card">
+            <strong>Order</strong>
+            <table class="data-table" style="margin-top:12px;">
+              <tr><td>Reference</td><td class="mono">${escapeHtml(order.reference)}</td></tr>
+              <tr><td>Tracking number</td><td class="mono">${escapeHtml(order.trackingNumber)}</td></tr>
+              <tr><td>Created</td><td>${new Date(order.createdAt).toISOString().slice(0, 16).replace("T", " ")} UTC</td></tr>
+              <tr><td>Estimated delivery</td><td>5–10 business days (Indonesia) · 7–15 business days (worldwide)</td></tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <strong>Items</strong>
+            <table class="data-table" style="margin-top:12px;">
+              <thead><tr><th>Product</th><th>Qty</th><th>Subtotal</th></tr></thead>
+              <tbody>
+                ${order.items.map(it => `
+                  <tr>
+                    <td><strong>${escapeHtml(it.title)}</strong><br><span class="muted">${escapeHtml(it.brand)}</span></td>
+                    <td>${it.qty}</td>
+                    <td>${formatIdr(it.unitPriceIdr * it.qty)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <strong>Shipping address</strong>
+            <p style="margin-top:8px;">
+              ${escapeHtml(order.customer.name)}<br>
+              ${escapeHtml(order.customer.phone)}<br>
+              ${escapeHtml(order.customer.address.line1)}<br>
+              ${order.customer.address.line2 ? escapeHtml(order.customer.address.line2) + "<br>" : ""}
+              ${escapeHtml(order.customer.address.city)}, ${escapeHtml(order.customer.address.postcode)}<br>
+              ${escapeHtml(order.customer.address.country)}
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <strong>Totals</strong>
+            <div class="row"><span>Subtotal</span><span>${formatIdr(order.subtotalIdr)}</span></div>
+            <div class="row"><span>Shipping (${order.totalGrams}g)</span><span>${formatIdr(order.shippingIdr)}</span></div>
+            <div class="row total"><span>Total</span><span>${formatIdr(order.totalIdr)}</span></div>
+          </div>
+
+          <div class="card" style="background: #f0fdf4; border-color: #bbf7d0;">
+            <strong>Next steps</strong>
+            <ol style="padding-left: 20px; margin-top: 8px; line-height: 1.8;">
+              <li>Watch your WhatsApp — we'll send bank-transfer instructions in 5 minutes.</li>
+              <li>Transfer the exact total amount (${formatIdr(order.totalIdr)}) to the account shown.</li>
+              <li>Send us the payment screenshot via WhatsApp.</li>
+              <li>We'll confirm payment and start the order with iHerb.</li>
+              <li>Track your package: <a href="track.html?ref=${encodeURIComponent(order.trackingNumber)}">${escapeHtml(order.trackingNumber)}</a></li>
+            </ol>
+          </div>
         </div>
       </div>
+
+      <p style="margin-top: 32px;">
+        <a class="btn-primary" href="track.html?ref=${encodeURIComponent(order.trackingNumber)}">Track your order →</a>
+        <a class="btn-secondary" href="index.html" style="margin-left: 8px;">Continue shopping</a>
+      </p>
+    </div>
+  `;
+}
+
+// ─── Render: track page ──────────────────────────────────────────────────────
+function renderTrack() {
+  renderHeader();
+  const root = document.getElementById("track-root");
+  const params = new URLSearchParams(location.search);
+  const ref = params.get("ref") || "";
+
+  root.innerHTML = `
+    <div class="container track-page">
+      <h1>Track your order</h1>
+      <p class="lead">Enter your Sindo Shipping tracking number to see your shipment status.</p>
+
+      <form id="track-form" style="margin: 24px 0;">
+        <input type="text" id="track-input" name="ref" placeholder="e.g. SS-202609-ABCDE" value="${escapeHtml(ref)}" style="padding:14px 18px; border:2px solid var(--line); border-radius:10px; font-size:16px; width: 320px; max-width: 90%;" autofocus>
+        <button type="submit" class="btn-primary">Track →</button>
+      </form>
+
       <div id="track-result"></div>
+
+      <div style="margin-top: 32px;">
+        <p class="muted">Demo tracking numbers:</p>
+        <ul class="muted" style="line-height: 1.8;">
+          <li><code>SS-202609-DEMO1</code> — Delivered</li>
+          <li><code>SS-202609-DEMO2</code> — In transit (last mile)</li>
+          <li><code>SS-202609-DEMO3</code> — At ID warehouse</li>
+          <li>Any other number — deterministic hash fallback to one of 6 stages</li>
+        </ul>
+      </div>
     </div>
   `;
 
-  const form = document.getElementById("track-form");
-  form.onsubmit = (e) => {
+  document.getElementById("track-form").onsubmit = (e) => {
     e.preventDefault();
-    const v = document.getElementById("track-input").value.trim().toUpperCase();
+    const v = document.getElementById("track-input").value.trim();
     if (!v) return;
-    if (v !== initialRef.toUpperCase()) {
-      const u = new URL(location.href);
-      u.searchParams.set("n", v);
-      history.replaceState(null, "", u);
-    }
-    renderTrackResult(v);
+    window.location.href = "track.html?ref=" + encodeURIComponent(v);
   };
 
-  document.querySelectorAll("[data-demo]").forEach(el => {
-    el.onclick = () => {
-      document.getElementById("track-input").value = el.dataset.demo;
-      form.requestSubmit();
-    };
-  });
-
-  if (initialRef) {
-    renderTrackResult(initialRef.trim().toUpperCase());
-  }
+  if (ref) renderTrackResult(ref);
 }
 
 function renderTrackResult(trackingNumber) {
-  const r = document.getElementById("track-result");
-  // Priority: live session data from order success > mock demo data > deterministic fallback
-  const live = sessionStorage.getItem(`sindo_track_${trackingNumber}`);
-  const mock = MOCK_TRACKING[trackingNumber];
-  let shipment, order;
+  const root = document.getElementById("track-result");
+  if (!root) return;
 
-  if (live) {
-    const data = JSON.parse(live);
-    shipment = data.shipment;
-    order = data.order;
-  } else if (mock) {
-    shipment = { currentStage: mock.currentStage, events: [], courier: mock.courier };
-    order = { tracking: trackingNumber, ref: trackingNumber };
-  } else {
-    // Deterministic fallback so ANY tracking# shows something
-    const stageIdx = hashString(trackingNumber) % SHIPPING.stages.length;
-    shipment = { currentStage: SHIPPING.stages[stageIdx].id, events: [], courier: "Sindo Shipping × JNE JIK" };
-    order = { tracking: trackingNumber, ref: trackingNumber };
+  let stageIdx = MOCK_TRACKING[trackingNumber];
+  if (stageIdx === undefined) {
+    let h = 0;
+    for (let i = 0; i < trackingNumber.length; i++) {
+      h = ((h << 5) - h + trackingNumber.charCodeAt(i)) | 0;
+    }
+    stageIdx = Math.abs(h) % SHIPPING.stages.length;
   }
+  const stage = SHIPPING.stages[stageIdx];
+  const stageNames = ["iHerb manually ordered", "At SG Yishun hub", "At ID Batam warehouse", "Local last mile", "Delivered"];
 
-  // Build event timeline up to current stage
-  const stageIndex = SHIPPING.stages.findIndex(s => s.id === shipment.currentStage);
-  const timeline = SHIPPING.stages.slice(0, stageIndex + 1).map((s, i) => {
-    const isLast = i === stageIndex;
-    return { ...s, done: true, current: isLast };
-  });
-
-  r.innerHTML = `
-    <div class="track-result-card">
-      <div class="track-result-head">
-        <div>
-          <div style="font-size:12px;color:#6b7280;">Nomor Resi</div>
-          <div class="track-number" style="font-size:18px;">${escapeHtml(trackingNumber)}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:12px;color:#6b7280;">Status</div>
-          <div class="track-status ${shipment.currentStage}">${escapeHtml(SHIPPING.stages[stageIndex].label)}</div>
-        </div>
+  root.innerHTML = `
+    <div class="card track-result">
+      <div class="track-number">
+        <strong>Tracking:</strong> <span class="mono">${escapeHtml(trackingNumber)}</span>
       </div>
-
-      <div class="track-meta-row">
-        <div><span>🚚</span> Kurir: <strong>${escapeHtml(shipment.courier)}</strong></div>
-        <div><span>📍</span> Dari: <strong>Singapura (Yishun hub)</strong></div>
-        <div><span>🛬</span> Tujuan: <strong>Indonesia</strong></div>
+      <div class="track-stage">
+        <div class="stage-name">Current stage: <strong>${escapeHtml(stage.name)}</strong></div>
+        <div class="stage-time muted">${escapeHtml(stage.note || "—")}</div>
       </div>
-
-      <div class="track-timeline">
-        ${timeline.map((s, i) => `
-          <div class="tl-item ${s.current ? 'current' : 'done'}">
-            <div class="tl-dot">
-              ${s.current ? '<div class="tl-pulse"></div>' : '✓'}
-            </div>
-            <div class="tl-body">
-              <div class="tl-label">${escapeHtml(s.label)}</div>
-              <div class="tl-desc">${escapeHtml(s.desc)}</div>
-            </div>
+      <div class="track-bar">
+        ${stageNames.map((name, i) => `
+          <div class="track-step ${i <= stageIdx ? 'done' : ''} ${i === stageIdx ? 'current' : ''}">
+            <div class="step-num">${i + 1}</div>
+            <div class="step-name">${name}</div>
           </div>
+          ${i < stageNames.length - 1 ? '<div class="step-line ' + (i < stageIdx ? 'done' : '') + '"></div>' : ''}
         `).join("")}
       </div>
-
-      <div class="track-foot">
-        ${shipment.currentStage === 'delivered'
-          ? '✅ Paket sudah diterima. Terima kasih telah berbelanja di Sindo!'
-          : `⏳ Estimasi sampai: <strong>${shipment.currentStage === 'transit' ? 'Hari ini' : '2-5 hari kerja'}</strong>. Update otomatis setiap ada perubahan status.`}
-      </div>
-
-      ${order && order.items ? `
-        <div class="track-items">
-          <h4>Isi paket</h4>
-          ${order.items.map(i => `
-            <div class="track-item">
-              <img ${lazyImgAttrs()} src="${i.image}" alt="" onerror="this.style.opacity=0"/>
-              <div>
-                <div class="ti-title">${escapeHtml(i.title)}</div>
-                <div class="ti-meta">${escapeHtml(i.brand)} × ${i.qty}</div>
-              </div>
-              <div class="ti-price">${formatIdr(i.lineTotal)}</div>
-            </div>
-          `).join("")}
-        </div>
-      ` : ''}
-
-      <div class="track-note">
-        🛈 <strong>Mock preview</strong>: data ini deterministik untuk demo platform. Pada produksi, ${escapeHtml(SHIPPING.partner)} menarik data dari <code>api.sindo.id/v1/shipments/${escapeHtml(trackingNumber)}</code>.
-      </div>
+      <p style="margin-top: 16px; font-size: 13px; color: var(--muted);">
+        Demo mode: any tracking number returns a stage via deterministic hash. In production, this calls the Sindo Shipping API directly.
+      </p>
     </div>
   `;
-
-  // Smooth scroll to result
-  r.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function hashString(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
+// ─── Render: categories page ─────────────────────────────────────────────────
+function renderCategories() {
+  renderHeader();
+  const root = document.getElementById("cat-sections");
+  const tiles = document.getElementById("cat-tiles");
+
+  // Top: category tiles (quick-jump)
+  tiles.innerHTML = CATEGORIES.map(cat => {
+    const count = PRODUCTS.filter(p => p.category === cat).length;
+    return `<a class="cat-tile" href="#cat-${slugify(cat)}">
+      <div class="cat-tile-name">${escapeHtml(cat)}</div>
+      <div class="cat-tile-count">${count} product${count !== 1 ? "s" : ""}</div>
+    </a>`;
+  }).join("");
+
+  // Brand filter options
+  const brands = [...new Set(PRODUCTS.map(p => p.brand))].sort();
+  const brandSel = document.getElementById("brand-filter");
+  brands.forEach(b => {
+    const opt = document.createElement("option");
+    opt.value = b;
+    opt.textContent = b;
+    brandSel.appendChild(opt);
+  });
+
+  document.getElementById("cat-count").textContent = CATEGORIES.length;
+  document.getElementById("prod-count").textContent = PRODUCTS.length;
+
+  function applyFilters() {
+    const sort = document.getElementById("sort").value;
+    const brand = document.getElementById("brand-filter").value;
+    const minRating = parseFloat(document.getElementById("rating-filter").value);
+
+    const filtered = PRODUCTS.filter(p =>
+      (!brand || p.brand === brand) && p.rating >= minRating
+    );
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sort) {
+        case "price-asc": return a.priceIdr - b.priceIdr;
+        case "price-desc": return b.priceIdr - a.priceIdr;
+        case "rating": return b.rating - a.rating;
+        case "reviews": return b.reviews - a.reviews;
+        default: return 0; // featured = original order
+      }
+    });
+
+    root.innerHTML = CATEGORIES.map(cat => {
+      const items = sorted.filter(p => p.category === cat);
+      if (items.length === 0) return "";
+      return `
+        <section class="cat" id="cat-${slugify(cat)}">
+          <h2 class="cat-title">${escapeHtml(cat)} <span class="muted">(${items.length})</span></h2>
+          <div class="grid">${items.map(productCard).join("")}</div>
+        </section>`;
+    }).join("");
+
+    if (sorted.length === 0) {
+      root.innerHTML = `<div class="card empty"><p>No products match your filters.</p></div>`;
+    }
+    bindCardEvents();
+  }
+
+  document.getElementById("sort").onchange = applyFilters;
+  document.getElementById("brand-filter").onchange = applyFilters;
+  document.getElementById("rating-filter").onchange = applyFilters;
+  applyFilters();
+  updateCartBadge();
 }
 
-// ─── Render: WA deep link from product card ─────────────────────────────────
-function waDirect(p) {
-  return `https://wa.me/${TENANT.whatsappClean}?text=${encodeURIComponent(
-    `Halo ${TENANT.name}, saya tertarik dengan produk:%0A%0A${p.title}%0ABrand: ${p.brand}%0AHarga: ${formatIdr(p.priceIdr)}%0AGTN: ${p.gtin}%0A%0AMohon konfirmasi stok dan ongkir ke kota saya.`
-  )}`;
+// ─── Render: search page ─────────────────────────────────────────────────────
+function renderSearch() {
+  renderHeader();
+  const params = new URLSearchParams(location.search);
+  const initial = params.get("q") || "";
+  const input = document.getElementById("search-input");
+  const results = document.getElementById("results");
+  if (initial) input.value = initial;
+
+  function search(q) {
+    q = (q || "").trim().toLowerCase();
+    if (!q) return [];
+    const tokens = q.split(/\s+/).filter(Boolean);
+    return PRODUCTS
+      .map(p => {
+        const haystack = `${p.title} ${p.brand} ${p.category} ${p.size || ""} ${p.description || ""}`.toLowerCase();
+        let score = 0;
+        for (const tok of tokens) {
+          if (haystack.includes(tok)) {
+            score += (haystack.startsWith(tok) || p.title.toLowerCase().startsWith(tok)) ? 10 : 1;
+          }
+        }
+        return { p, score };
+      })
+      .filter(r => r.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(r => r.p);
+  }
+
+  function render(list) {
+    const sort = document.getElementById("sort").value;
+    let sorted = [...list];
+    if (sort === "price-asc") sorted.sort((a, b) => a.priceIdr - b.priceIdr);
+    else if (sort === "price-desc") sorted.sort((a, b) => b.priceIdr - a.priceIdr);
+    else if (sort === "rating") sorted.sort((a, b) => b.rating - a.rating);
+
+    if (sorted.length === 0) {
+      results.innerHTML = `<div class="card empty" style="text-align:center; padding: 40px;">
+        <p>No products match your search.</p>
+        <p><a class="btn-primary" href="categories.html">Browse all products →</a></p>
+      </div>`;
+    } else {
+      results.innerHTML = `
+        <p class="muted" style="text-align:center; margin-bottom: 16px;">${sorted.length} result${sorted.length !== 1 ? "s" : ""}</p>
+        <div class="grid">${sorted.map(productCard).join("")}</div>
+      `;
+      bindCardEvents();
+    }
+  }
+
+  input.oninput = () => {
+    const list = search(input.value);
+    render(list);
+    // Update URL without page reload
+    const newUrl = new URL(location.href);
+    if (input.value) newUrl.searchParams.set("q", input.value);
+    else newUrl.searchParams.delete("q");
+    history.replaceState(null, "", newUrl.toString());
+  };
+  document.getElementById("sort").onchange = () => render(search(input.value));
+
+  render(search(initial));
+  updateCartBadge();
 }
 
-// ─── Reusable product card HTML ────────────────────────────────────────────
-function productCard(p) {
-  return `
-    <article class="card" data-go-product="${p.id}">
-      <div class="img">
-        <img ${lazyImgAttrs()} src="${p.image}" alt="${escapeHtml(p.title)}" onerror="this.parentNode.innerHTML='<div class=no-img>no image</div>'"/>
-      </div>
-      <div class="body">
-        <div class="brand-tag">${escapeHtml(p.brand)}</div>
-        <div class="title">${escapeHtml(p.title)}</div>
-        <div class="rating">★ ${p.rating} <span class="muted">(${p.reviews.toLocaleString("id-ID")})</span></div>
-        <div class="price">${formatIdr(p.priceIdr)}</div>
-        <button class="btn-wa" data-add-cart="${p.id}">+ Keranjang</button>
-      </div>
-    </article>
-  `;
-}
+// ─── Bind everything on DOMContentLoaded ───────────────────────────────────
+document.addEventListener("DOMContentLoaded", updateCartBadge);
