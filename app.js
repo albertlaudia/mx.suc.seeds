@@ -3,16 +3,12 @@
 
 // ─── Currency / formatting ──────────────────────────────────────────────────
 function formatIdr(n) {
-  return "Rp " + Math.round(n).toLocaleString("id-ID");
-}
-function formatSgd(n) {
+  // Legacy name, returns SGD formatted
   return "S$" + Number(n).toFixed(2);
 }
 function formatPriceDual(p) {
-  if (p.priceSgd != null && p.priceIdr != null) {
-    return `<span class="price-sgd">${formatSgd(p.priceSgd)}</span><span class="price-idr">${formatIdr(p.priceIdr)}</span>`;
-  }
-  return formatIdr(p.priceIdr);
+  // Single SGD display per user spec
+  return formatIdr(p.priceSgd);
 }
 function escapeHtml(s) {
   return (s ?? "").toString()
@@ -62,7 +58,7 @@ function cartItems() {
   return Object.entries(c)
     .map(([id, qty]) => {
       const p = PRODUCTS.find(x => x.id === id);
-      return p ? { ...p, qty, lineTotal: p.priceIdr * qty } : null;
+      return p ? { ...p, qty, lineTotal: p.priceSgd * qty } : null;
     })
     .filter(Boolean);
 }
@@ -75,14 +71,14 @@ function updateCartBadge() {
   document.querySelectorAll("[data-cart-count]").forEach(el => el.textContent = n);
 }
 
-// ─── Single shipping option — Sindo Shipping × S$20/100g ─────────────────────
+// ─── Single shipping option — Sindo Shipping × S$3/100g + 10% markup ─────────────────────
 function getShipping(items) {
   const opt = SHIPPING.options[0];
   const itemsList = items || (typeof cartItems === "function" ? cartItems() : []);
   const calc = window.computeShippingFee(itemsList);
   return {
     id: opt.id, courier: opt.courier, etaDays: opt.etaDays, note: opt.note,
-    priceIdr: calc.feeIdr, totalGrams: calc.totalGrams,
+    priceSgd: calc.feeSgd, totalGrams: calc.totalGrams,
     ratePer100g: calc.ratePer100g, lineItems: calc.lineItems
   };
 }
@@ -144,11 +140,11 @@ function renderHome() {
   const ts = document.getElementById("extract-time");
   if (ts) ts.textContent = `${EXTRACT_INFO.extractedAt} · snapshot ${EXTRACT_INFO.snapshotId}`;
 
-  const featured = [...PRODUCTS].sort((a, b) => b.priceIdr - a.priceIdr).slice(0, 3);
+  const featured = [...PRODUCTS].sort((a, b) => b.priceSgd - a.priceSgd).slice(0, 3);
   document.getElementById("featured").innerHTML = featured.map(productCard).join("");
 
   document.getElementById("cats").innerHTML = CATEGORIES.map(cat => {
-    const items = PRODUCTS.filter(p => p.category === cat).sort((a, b) => b.priceIdr - a.priceIdr);
+    const items = PRODUCTS.filter(p => p.category === cat).sort((a, b) => b.priceSgd - a.priceSgd);
     return `
       <section class="cat" id="cat-${slugify(cat)}">
         <h2 class="cat-title">${escapeHtml(cat)} <span class="muted">(${items.length})</span></h2>
@@ -214,8 +210,8 @@ function renderProduct() {
     "offers": {
       "@type": "Offer",
       "url": `https://seeds.scaleupcrm.com/product.html?id=${p.id}`,
-      "priceCurrency": "IDR",
-      "price": p.priceIdr,
+      "priceCurrency": "SGD",
+      "price": p.priceSgd,
       "availability": "https://schema.org/InStock",
       "seller": { "@type": "Organization", "name": "Sindo Wellness" }
     },
@@ -259,6 +255,13 @@ function renderProduct() {
           <div class="pdp-ingredients">
             <strong>Ingredients:</strong> ${escapeHtml(p.ingredients)}
           </div>
+
+          ${p.supplementFactsImage ? `
+            <div class="pdp-supplement-facts">
+              <h3>Supplement Facts <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="sf-source">(view full label on iHerb →)</a></h3>
+              <img ${lazyImgAttrs()} src="${p.supplementFactsImage}" alt="Supplement Facts panel for ${escapeHtml(p.title)}" onerror="this.parentNode.style.display='none'"/>
+            </div>
+          ` : ""}
 
           <div class="qty-row">
             <div class="qty">
@@ -328,7 +331,7 @@ function renderCart() {
                 <div class="cart-row-brand">${escapeHtml(it.brand)}</div>
                 <div class="cart-row-title"><a href="product.html?id=${it.id}">${escapeHtml(it.title)}</a></div>
                 <div class="cart-row-meta">${escapeHtml(it.size || "")} · ${it.weightGrams}g</div>
-                <div class="cart-row-shipping">📦 ${it.qty} × ${it.weightGrams}g × Rp 3.200/100g = <strong>${formatIdr(Math.ceil((it.qty * it.weightGrams) / 100) * 3200)}</strong></div>
+                <div class="cart-row-shipping">📦 ${it.qty} × ${it.weightGrams}g × S$3/100g = <strong>${formatIdr(Math.ceil((it.qty * it.weightGrams) / 100) * 3)}</strong></div>
               </div>
               <div class="cart-row-controls">
                 <div class="qty">
@@ -347,9 +350,9 @@ function renderCart() {
           <div class="row"><span>Subtotal (${items.reduce((s, i) => s + i.qty, 0)} items)</span><span>${formatIdr(cartTotal())}</span></div>
           <div class="row">
             <span>Shipping (${ship.totalGrams}g)<br><span class="muted">Sindo Shipping × S$20/100g</span></span>
-            <span>${formatIdr(ship.priceIdr)}</span>
+            <span>${formatIdr(ship.priceSgd)}</span>
           </div>
-          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.priceIdr)}</span></div>
+          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.priceSgd)}</span></div>
           <a class="btn-primary" href="checkout.html">Proceed to checkout →</a>
           <p class="muted" style="font-size:12px; margin-top:12px;">Payment by bank transfer. Shipping fee includes customs for shipments up to 1.5 kg.</p>
         </div>
@@ -443,24 +446,24 @@ function renderCheckout() {
                 <img ${lazyImgAttrs(`width="40" height="40"`)} src="${it.image}" alt="${escapeHtml(it.title)}"/>
                 <div class="ci-info">
                   <div class="ci-title">${escapeHtml(it.title.slice(0, 60))}${it.title.length > 60 ? "…" : ""}</div>
-                  <div class="ci-meta">${escapeHtml(it.brand)} · ${it.qty} × ${formatIdr(it.priceIdr)}</div>
+                  <div class="ci-meta">${escapeHtml(it.brand)} · ${it.qty} × ${formatIdr(it.priceSgd)}</div>
                 </div>
               </div>
             `).join("")}
           </div>
           <div class="row"><span>Subtotal</span><span>${formatIdr(cartTotal())}</span></div>
-          <div class="row"><span>Shipping (${ship.totalGrams}g)</span><span>${formatIdr(ship.priceIdr)}</span></div>
-          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.priceIdr)}</span></div>
+          <div class="row"><span>Shipping (${ship.totalGrams}g)</span><span>${formatIdr(ship.priceSgd)}</span></div>
+          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.priceSgd)}</span></div>
           <details style="margin-top: 12px; font-size: 13px;">
             <summary>Per-item shipping breakdown</summary>
             <table style="width:100%; margin-top: 8px; font-size: 12px;">
               ${ship.lineItems.map(li => `
                 <tr>
                   <td>${escapeHtml(li.title.slice(0, 30))}${li.title.length > 30 ? "…" : ""} × ${li.qty}</td>
-                  <td style="text-align:right;">${li.weightGrams}g → ${formatIdr(li.shippingIdr)}</td>
+                  <td style="text-align:right;">${li.weightGrams}g → ${formatIdr(li.shippingSgd)}</td>
                 </tr>
               `).join("")}
-              <tr style="font-weight:bold;"><td>Total</td><td style="text-align:right;">${formatIdr(ship.priceIdr)}</td></tr>
+              <tr style="font-weight:bold;"><td>Total</td><td style="text-align:right;">${formatIdr(ship.priceSgd)}</td></tr>
             </table>
           </details>
         </aside>
@@ -479,10 +482,10 @@ function renderCheckout() {
         name: fd.get("name"), email: fd.get("email"), phone: fd.get("phone"),
         address: { line1: fd.get("line1"), line2: fd.get("line2"), city: fd.get("city"), postcode: fd.get("postcode"), country: fd.get("country") }
       },
-      items: items.map(i => ({ id: i.id, title: i.title, brand: i.brand, image: i.image, qty: i.qty, unitPriceIdr: i.priceIdr, weightGrams: i.weightGrams })),
-      subtotalIdr: cartTotal(),
-      shippingIdr: ship.priceIdr,
-      totalIdr: cartTotal() + ship.priceIdr,
+      items: items.map(i => ({ id: i.id, title: i.title, brand: i.brand, image: i.image, qty: i.qty, unitPriceSgd: i.priceSgd, weightGrams: i.weightGrams })),
+      subtotalSgd: cartTotal(),
+      shippingSgd: ship.priceSgd,
+      totalSgd: cartTotal() + ship.priceSgd,
       totalGrams: ship.totalGrams,
       bankInstructions: "After you place the order, we'll send you the bank account details via WhatsApp. Once payment is confirmed, your tracking number is issued automatically."
     };
@@ -536,7 +539,7 @@ function renderOrder() {
                   <tr>
                     <td><strong>${escapeHtml(it.title)}</strong><br><span class="muted">${escapeHtml(it.brand)}</span></td>
                     <td>${it.qty}</td>
-                    <td>${formatIdr(it.unitPriceIdr * it.qty)}</td>
+                    <td>${formatIdr(it.unitPriceSgd * it.qty)}</td>
                   </tr>
                 `).join("")}
               </tbody>
@@ -559,16 +562,16 @@ function renderOrder() {
         <div>
           <div class="card">
             <strong>Totals</strong>
-            <div class="row"><span>Subtotal</span><span>${formatIdr(order.subtotalIdr)}</span></div>
-            <div class="row"><span>Shipping (${order.totalGrams}g)</span><span>${formatIdr(order.shippingIdr)}</span></div>
-            <div class="row total"><span>Total</span><span>${formatIdr(order.totalIdr)}</span></div>
+            <div class="row"><span>Subtotal</span><span>${formatIdr(order.subtotalSgd)}</span></div>
+            <div class="row"><span>Shipping (${order.totalGrams}g)</span><span>${formatIdr(order.shippingSgd)}</span></div>
+            <div class="row total"><span>Total</span><span>${formatIdr(order.totalSgd)}</span></div>
           </div>
 
           <div class="card" style="background: #f0fdf4; border-color: #bbf7d0;">
             <strong>Next steps</strong>
             <ol style="padding-left: 20px; margin-top: 8px; line-height: 1.8;">
               <li>Watch your WhatsApp — we'll send bank-transfer instructions in 5 minutes.</li>
-              <li>Transfer the exact total amount (${formatIdr(order.totalIdr)}) to the account shown.</li>
+              <li>Transfer the exact total amount (${formatIdr(order.totalSgd)}) to the account shown.</li>
               <li>Send us the payment screenshot via WhatsApp.</li>
               <li>We'll confirm payment and start the order with iHerb.</li>
               <li>Track your package: <a href="track.html?ref=${encodeURIComponent(order.trackingNumber)}">${escapeHtml(order.trackingNumber)}</a></li>
@@ -704,8 +707,8 @@ function renderCategories() {
     );
     const sorted = [...filtered].sort((a, b) => {
       switch (sort) {
-        case "price-asc": return a.priceIdr - b.priceIdr;
-        case "price-desc": return b.priceIdr - a.priceIdr;
+        case "price-asc": return a.priceSgd - b.priceSgd;
+        case "price-desc": return b.priceSgd - a.priceSgd;
         case "rating": return b.rating - a.rating;
         case "reviews": return b.reviews - a.reviews;
         default: return 0; // featured = original order
@@ -767,8 +770,8 @@ function renderSearch() {
   function render(list) {
     const sort = document.getElementById("sort").value;
     let sorted = [...list];
-    if (sort === "price-asc") sorted.sort((a, b) => a.priceIdr - b.priceIdr);
-    else if (sort === "price-desc") sorted.sort((a, b) => b.priceIdr - a.priceIdr);
+    if (sort === "price-asc") sorted.sort((a, b) => a.priceSgd - b.priceSgd);
+    else if (sort === "price-desc") sorted.sort((a, b) => b.priceSgd - a.priceSgd);
     else if (sort === "rating") sorted.sort((a, b) => b.rating - a.rating);
 
     if (sorted.length === 0) {

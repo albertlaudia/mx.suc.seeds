@@ -446,3 +446,35 @@ img { color: transparent; }
   font-size: 1em;
   color: #6b7280;
 }
+
+/* Supplement Facts panel */
+.pdp-supplement-facts {
+  margin: 20px 0;
+  padding: 16px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+.pdp-supplement-facts h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #374151;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pdp-supplement-facts .sf-source {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+  text-decoration: none;
+}
+.pdp-supplement-facts .sf-source:hover { color: #d23f3f; }
+.pdp-supplement-facts img {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 4px;
+}
