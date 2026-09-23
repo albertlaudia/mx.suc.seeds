@@ -469,7 +469,7 @@ function renderCheckout() {
             <table style="width:100%; margin-top: 8px; font-size: 12px;">
               ${ship.lineItems.map(li => `
                 <tr>
-                  <td>${escapeHtml(li.title.slice(0, 30))}${li.title.length > 30 ? "…" : ""} × ${li.qty}</td>
+                  <td>${escapeHtml((PRODUCTS.find(p=>p.id===li.id)?.title||li.id).slice(0, 30))}${(PRODUCTS.find(p=>p.id===li.id)?.title||li.id).length > 30 ? "…" : ""} × ${li.qty}</td>
                   <td style="text-align:right;">${li.weightGrams}g → ${formatIdr(li.shippingSgd)}</td>
                 </tr>
               `).join("")}
