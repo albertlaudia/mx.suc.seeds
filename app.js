@@ -5,6 +5,15 @@
 function formatIdr(n) {
   return "Rp " + Math.round(n).toLocaleString("id-ID");
 }
+function formatSgd(n) {
+  return "S$" + Number(n).toFixed(2);
+}
+function formatPriceDual(p) {
+  if (p.priceSgd != null && p.priceIdr != null) {
+    return `<span class="price-sgd">${formatSgd(p.priceSgd)}</span><span class="price-idr">${formatIdr(p.priceIdr)}</span>`;
+  }
+  return formatIdr(p.priceIdr);
+}
 function escapeHtml(s) {
   return (s ?? "").toString()
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -110,7 +119,7 @@ function productCard(p) {
         <div class="brand">${escapeHtml(p.brand)}</div>
         <div class="title">${escapeHtml(p.title)}</div>
         <div class="rating">★ ${p.rating} <span class="reviews">(${p.reviews.toLocaleString("en-US")})</span></div>
-        <div class="price">${formatIdr(p.priceIdr)}</div>
+        <div class="price">${formatPriceDual(p)}</div>
         <div class="actions">
           <button class="btn-add" data-add-cart="${escapeHtml(p.id)}" aria-label="Add to cart">+ Add to cart</button>
         </div>
@@ -234,7 +243,7 @@ function renderProduct() {
           <div class="pdp-brand">${escapeHtml(p.brand)}</div>
           <h1>${escapeHtml(p.title)}</h1>
           <div class="pdp-rating">★ ${p.rating} <span class="muted">(${p.reviews.toLocaleString("en-US")} iHerb reviews)</span></div>
-          <div class="pdp-price">${formatIdr(p.priceIdr)}</div>
+          <div class="pdp-price">${formatPriceDual(p)}</div>
 
           <a class="pdp-source" href="${p.url}" target="_blank" rel="noopener noreferrer">
             <div class="src-icon">iH</div>
