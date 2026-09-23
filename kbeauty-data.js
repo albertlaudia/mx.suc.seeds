@@ -248,7 +248,15 @@ window.KBEAUTY = {
     "Round Lab": "#7a8a8a",
     "TIRTIR": "#d97a8a"
   },
-  shipping: { ratePer100gSgd: 3, markupPct: 10 }
+  shipping: { ratePer100gSgd: 3, markupPct: 10 },
+
+  // iHerb-style legal disclaimers — rendered into footer of every kbeauty page.
+  // Keep wording identical across all kbeauty pages so legal review only needs one source.
+  legal: {
+    reviewDisclaimer: 'Product reviews reflect the views and opinions expressed by individual contributors and not those of Sindo K-Beauty. Sindo K-Beauty does not verify or endorse any claims made in these reviews. Customer ratings and review counts are aggregated from publicly available sources; individual results may vary.',
+    fdaDisclaimer: 'Statements regarding cosmetic products have not been evaluated by the U.S. Food and Drug Administration. These products are not intended to diagnose, treat, cure, or prevent any disease or health condition. Reviews citing "results" or "efficacy" describe the personal experience of the reviewer, not a guarantee of performance.',
+    trademarkNotice: 'All brand names (including COSRX, Beauty of Joseon, Laneige, Anua, SKIN1004, Some By Mi, Innisfree, Round Lab, TIRTIR) and product names referenced on this storefront are the property of their respective owners. Mention does not imply endorsement by or affiliation with the brand owners.'
+  }
 };
 
 // Sort by category for stable rendering
