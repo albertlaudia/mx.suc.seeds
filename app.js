@@ -77,9 +77,19 @@ function getShipping(items) {
   const itemsList = items || (typeof cartItems === "function" ? cartItems() : []);
   const calc = window.computeShippingFee(itemsList);
   return {
-    id: opt.id, courier: opt.courier, etaDays: opt.etaDays, note: opt.note,
-    priceSgd: calc.feeSgd, totalGrams: calc.totalGrams,
-    ratePer100g: calc.ratePer100g, lineItems: calc.lineItems
+    id: opt.id,
+    courier: opt.courier,
+    etaDays: opt.etaDays,
+    note: opt.note,
+    priceSgd: calc.shippingSgd,         // alias for backward compat
+    shippingSgd: calc.shippingSgd,
+    subtotalSgd: calc.subtotalSgd,
+    markupPct: calc.markupPct,
+    markupSgd: calc.markupSgd,
+    totalSgd: calc.totalSgd,
+    totalGrams: calc.totalGrams,
+    ratePer100g: window.SHIPPING.ratePer100gSgd,
+    lineItems: calc.lineItems
   };
 }
 
@@ -349,10 +359,10 @@ function renderCart() {
           <h3>Order summary</h3>
           <div class="row"><span>Subtotal (${items.reduce((s, i) => s + i.qty, 0)} items)</span><span>${formatIdr(cartTotal())}</span></div>
           <div class="row">
-            <span>Shipping (${ship.totalGrams}g)<br><span class="muted">Sindo Shipping × S$20/100g</span></span>
-            <span>${formatIdr(ship.priceSgd)}</span>
+            <span>Shipping (${ship.totalGrams}g)<br><span class="muted">Sindo Shipping × S$3/100g</span></span>
+            <span>${formatIdr(ship.shippingSgd)}</span>
           </div>
-          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.priceSgd)}</span></div>
+          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.shippingSgd + ship.markupSgd)}</span></div>
           <a class="btn-primary" href="checkout.html">Proceed to checkout →</a>
           <p class="muted" style="font-size:12px; margin-top:12px;">Payment by bank transfer. Shipping fee includes customs for shipments up to 1.5 kg.</p>
         </div>
@@ -452,8 +462,8 @@ function renderCheckout() {
             `).join("")}
           </div>
           <div class="row"><span>Subtotal</span><span>${formatIdr(cartTotal())}</span></div>
-          <div class="row"><span>Shipping (${ship.totalGrams}g)</span><span>${formatIdr(ship.priceSgd)}</span></div>
-          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.priceSgd)}</span></div>
+          <div class="row"><span>Shipping (${ship.totalGrams}g)</span><span>${formatIdr(ship.shippingSgd)}</span></div>
+          <div class="row total"><span>Total</span><span>${formatIdr(cartTotal() + ship.shippingSgd + ship.markupSgd)}</span></div>
           <details style="margin-top: 12px; font-size: 13px;">
             <summary>Per-item shipping breakdown</summary>
             <table style="width:100%; margin-top: 8px; font-size: 12px;">
@@ -463,7 +473,7 @@ function renderCheckout() {
                   <td style="text-align:right;">${li.weightGrams}g → ${formatIdr(li.shippingSgd)}</td>
                 </tr>
               `).join("")}
-              <tr style="font-weight:bold;"><td>Total</td><td style="text-align:right;">${formatIdr(ship.priceSgd)}</td></tr>
+              <tr style="font-weight:bold;"><td>Total</td><td style="text-align:right;">${formatIdr(ship.shippingSgd)}</td></tr>
             </table>
           </details>
         </aside>
@@ -484,8 +494,8 @@ function renderCheckout() {
       },
       items: items.map(i => ({ id: i.id, title: i.title, brand: i.brand, image: i.image, qty: i.qty, unitPriceSgd: i.priceSgd, weightGrams: i.weightGrams })),
       subtotalSgd: cartTotal(),
-      shippingSgd: ship.priceSgd,
-      totalSgd: cartTotal() + ship.priceSgd,
+      shippingSgd: ship.shippingSgd,
+      totalSgd: cartTotal() + ship.shippingSgd + ship.markupSgd,
       totalGrams: ship.totalGrams,
       bankInstructions: "After you place the order, we'll send you the bank account details via WhatsApp. Once payment is confirmed, your tracking number is issued automatically."
     };
