@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c4476a">
+<title>Dashboard · Sindo K-Beauty</title>
+<meta name="description" content="Your Sindo K-Beauty account dashboard — orders, routine, wishlist, subscriptions, addresses, and loyalty rewards.">
+<link rel="canonical" href="https://seeds.scaleupcrm.com/dashboard.html">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="design-system.css?v=v2">
+<link rel="stylesheet" href="dashboard.css?v=v2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3EK%3C/text%3C/svg%3E">
+</head>
+<body>
+
+<!-- ============= TOP BAR ============= -->
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a href="kbeauty.html" class="topbar-brand">Sindo K-Beauty</a>
+    <div class="topbar-search">
+      <input class="input" type="search" placeholder="Search products, ingredients, or brands…" aria-label="Search">
+    </div>
+    <nav class="topbar-actions">
+      <a href="kbeauty.html" class="btn btn-ghost btn-icon" aria-label="Storefront" title="Storefront">🛍️</a>
+      <a href="cart.html" class="btn btn-ghost btn-icon" aria-label="Cart" title="Cart">
+        🛒 <span class="badge badge-brand" style="position:absolute;margin-left:14px;margin-top:-12px;">2</span>
+      </a>
+      <button class="btn btn-ghost btn-icon" aria-label="Notifications" title="Notifications" id="notif-btn" style="position:relative;">
+        🔔 <span style="position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--c-brand);border-radius:50%;"></span>
+      </button>
+      <button class="btn btn-ghost btn-icon" aria-label="Dark mode" title="Toggle theme" id="theme-toggle">🌙</button>
+      <div class="avatar" title="Aria Setiawan">A</div>
+    </nav>
+  </div>
+</header>
+
+<!-- ============= LAYOUT ============= -->
+<div class="dash">
+
+  <!-- ─── Sidebar ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="avatar avatar-lg">A</div>
+      <div>
+        <div style="font-weight:600;">Aria Setiawan</div>
+        <div class="text-xs text-muted">aria.setiawan@email.com</div>
+      </div>
+    </div>
+
+    <div class="sidebar-tier">
+      <div class="row justify-between">
+        <span class="eyebrow">Glow Tier</span>
+        <span class="text-xs text-muted">Gold · 2,840 pts</span>
+      </div>
+      <div class="progress mt-2"><div class="progress-bar" style="width: 71%;"></div></div>
+      <div class="text-xs text-muted mt-1">660 pts to Platinum</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#overview" class="sidebar-link active"><span>🏠</span> Overview</a>
+      <a href="#orders" class="sidebar-link"><span>📦</span> Orders <span class="badge">4</span></a>
+      <a href="#routine" class="sidebar-link"><span>✨</span> My Routine <span class="badge badge-brand">3</span></a>
+      <a href="#wishlist" class="sidebar-link"><span>💗</span> Wishlist <span class="badge">7</span></a>
+      <a href="#subscriptions" class="sidebar-link"><span>🔁</span> Subscriptions <span class="badge">2</span></a>
+      <a href="#addresses" class="sidebar-link"><span>📍</span> Addresses</a>
+      <a href="#reviews" class="sidebar-link"><span>⭐</span> My Reviews</a>
+      <a href="#wallet" class="sidebar-link"><span>💳</span> Wallet & Credits</a>
+      <a href="#support" class="sidebar-link"><span>💬</span> Support <span class="badge badge-info">1</span></a>
+      <a href="#settings" class="sidebar-link"><span>⚙️</span> Settings</a>
+    </nav>
+
+    <div class="sidebar-promo">
+      <div style="font-size:32px;">🎁</div>
+      <div style="font-weight:600;font-size:var(--fs-md);">Refer a friend</div>
+      <div class="text-xs text-muted">Both get S$10 off — give S$10, get S$10.</div>
+      <button class="btn btn-primary btn-sm mt-2">Get my link</button>
+    </div>
+  </aside>
+
+  <!-- ─── Main content ─── -->
+  <main class="dash-main">
+
+    <!-- Hero greeting -->
+    <section class="hero-greeting anim-fade-up">
+      <div>
+        <div class="eyebrow">Wednesday · 23 September 2026</div>
+        <h1 class="display-3 mt-2">Good morning, <span class="gradient-text">Aria</span> ☀️</h1>
+        <p class="text-muted mt-2" style="font-size:var(--fs-md);max-width:540px;">Your skin routine is up to date. Two new products just landed in your wishlist and one order ships tomorrow.</p>
+      </div>
+      <div class="hero-greeting-cta">
+        <button class="btn btn-primary">Continue routine →</button>
+        <button class="btn btn-ghost">View orders</button>
+      </div>
+    </section>
+
+    <!-- Bento grid -->
+    <div class="bento stagger">
+
+      <!-- Loyalty (large) -->
+      <section class="card card-elevated bento-loyalty">
+        <div class="card-padded">
+          <div class="row justify-between">
+            <div>
+              <div class="eyebrow">Glow Loyalty</div>
+              <h2 class="display-3 mt-1">2,840 <span style="font-size:var(--fs-lg);color:var(--c-text-muted);">pts</span></h2>
+            </div>
+            <span class="badge badge-brand">GOLD</span>
+          </div>
+          <p class="text-sm text-muted mt-1">660 points away from Platinum — unlocks free express shipping.</p>
+
+          <div class="progress mt-4" style="height:10px;"><div class="progress-bar" style="width:71%;"></div></div>
+
+          <div class="loyalty-milestones">
+            <div class="milestone" data-pct="25"><div class="dot"></div><div class="label">Silver<br/><strong>S$5 off</strong></div></div>
+            <div class="milestone" data-pct="50"><div class="dot"></div><div class="label">Gold<br/><strong>10% back</strong></div></div>
+            <div class="milestone done" data-pct="71"><div class="dot"></div><div class="label">You are here<br/><strong>2,840 pts</strong></div></div>
+            <div class="milestone" data-pct="85"><div class="dot"></div><div class="label">Platinum<br/><strong>Free shipping</strong></div></div>
+            <div class="milestone" data-pct="100"><div class="dot"></div><div class="label">Diamond<br/><strong>S$25 voucher</strong></div></div>
+          </div>
+
+          <div class="loyalty-actions">
+            <button class="btn btn-secondary btn-sm">How to earn →</button>
+            <button class="btn btn-secondary btn-sm">Redeem points</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick stats -->
+      <section class="bento-stats">
+        <div class="stat-tile">
+          <div class="stat-num mono">12</div>
+          <div class="stat-label">Orders this year</div>
+          <div class="stat-trend up">+3 vs last year</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-num mono">S$486</div>
+          <div class="stat-label">Lifetime spend</div>
+          <div class="stat-trend up">S$10 saved via loyalty</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-num mono">9.2</div>
+          <div class="stat-label">Routine adherence</div>
+          <div class="stat-trend">steps / day avg</div>
+        </div>
+      </section>
+
+      <!-- Recent orders -->
+      <section class="card card-elevated bento-orders">
+        <div class="card-padded">
+          <div class="row justify-between mb-4">
+            <div>
+              <div class="eyebrow">Recent Orders</div>
+              <h2 class="h2 mt-1">4 active orders</h2>
+            </div>
+            <a href="#orders" class="btn btn-ghost btn-sm">View all →</a>
+          </div>
+
+          <div class="order-list">
+            <div class="order-row">
+              <div class="order-id mono">SINDO-K6H2N9</div>
+              <div class="order-imgs">
+                <img src="https://placehold.co/80x80/0066cc/ffffff?text=COSRX" alt="COSRX Snail 96">
+                <img src="https://placehold.co/80x80/7ab8d8/ffffff?text=Laneige" alt="Laneige">
+                <img src="https://placehold.co/80x80/1a3a6e/ffffff?text=BOJ" alt="BOJ Sun">
+                <span class="order-more">+1</span>
+              </div>
+              <div class="order-info">
+                <div class="text-sm">3 items · S$68.40 · Aug 24</div>
+                <div class="text-xs text-muted">Sindo Shipping · arriving Friday</div>
+              </div>
+              <span class="badge badge-info">In Transit</span>
+              <div class="order-actions">
+                <button class="btn btn-secondary btn-sm">Track</button>
+                <button class="btn btn-ghost btn-sm">Reorder</button>
+              </div>
+            </div>
+
+            <div class="order-row">
+              <div class="order-id mono">SINDO-J9X4T2</div>
+              <div class="order-imgs">
+                <img src="https://placehold.co/80x80/4a9eb8/ffffff?text=SKIN1004" alt="SKIN1004">
+                <img src="https://placehold.co/80x80/3a8a8a/ffffff?text=Anua" alt="Anua">
+              </div>
+              <div class="order-info">
+                <div class="text-sm">2 items · S$53.00 · Sep 11</div>
+                <div class="text-xs text-muted">Delivered · left at front desk</div>
+              </div>
+              <span class="badge badge-success">Delivered</span>
+              <div class="order-actions">
+                <button class="btn btn-secondary btn-sm">Buy again</button>
+                <button class="btn btn-ghost btn-sm">⭐ Review</button>
+              </div>
+            </div>
+
+            <div class="order-row">
+              <div class="order-id mono">SINDO-M2P7K5</div>
+              <div class="order-imgs">
+                <img src="https://placehold.co/80x80/d97a3a/ffffff?text=SBM" alt="Some By Mi">
+              </div>
+              <div class="order-info">
+                <div class="text-sm">1 item · S$23.10 · Sep 18</div>
+                <div class="text-xs text-muted">Awaiting bank-transfer confirmation</div>
+              </div>
+              <span class="badge badge-warning">Pending</span>
+              <div class="order-actions">
+                <button class="btn btn-primary btn-sm">Pay now</button>
+              </div>
+            </div>
+
+            <div class="order-row">
+              <div class="order-id mono">SINDO-R8D1Q6</div>
+              <div class="order-imgs">
+                <img src="https://placehold.co/80x80/5a8a3a/ffffff?text=Innisfree" alt="Innisfree">
+              </div>
+              <div class="order-info">
+                <div class="text-sm">1 item · S$28.60 · Sep 22</div>
+                <div class="text-xs text-muted">Ordered from iHerb · ships from Korea</div>
+              </div>
+              <span class="badge">Pre-order</span>
+              <div class="order-actions">
+                <button class="btn btn-ghost btn-sm">Track</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Routine builder (K-beauty specific — differentiator) -->
+      <section class="card card-elevated bento-routine">
+        <div class="card-padded">
+          <div class="row justify-between mb-3">
+            <div>
+              <div class="eyebrow">My Skincare Routine</div>
+              <h2 class="h2 mt-1">9-step routine</h2>
+            </div>
+            <span class="badge badge-success">● Synced</span>
+          </div>
+
+          <div class="routine-tabs">
+            <button class="routine-tab active">AM ☀️</button>
+            <button class="routine-tab">PM 🌙</button>
+            <button class="routine-tab">Weekly</button>
+          </div>
+
+          <div class="routine-steps">
+            <div class="step done">
+              <span class="step-num">1</span>
+              <div class="step-info"><strong>Oil cleanse</strong><span class="text-xs text-muted">Banila Co Clean It Zero · not in cart</span></div>
+              <button class="btn btn-ghost btn-sm">+</button>
+            </div>
+            <div class="step done">
+              <span class="step-num">2</span>
+              <div class="step-info"><strong>Water cleanse</strong><span class="text-xs text-muted">COSRX Low pH Good Morning Gel</span></div>
+              <span class="badge badge-success">In cart</span>
+            </div>
+            <div class="step done">
+              <span class="step-num">3</span>
+              <div class="step-info"><strong>Toner</strong><span class="text-xs text-muted">Anua Heartleaf 77% — last bought Sep 11</span></div>
+              <span class="badge badge-success">Active</span>
+            </div>
+            <div class="step done">
+              <span class="step-num">4</span>
+              <div class="step-info"><strong>Essence</strong><span class="text-xs text-muted">COSRX Snail 96 — reorder due in 4 days</span></div>
+              <button class="btn btn-primary btn-sm">Reorder</button>
+            </div>
+            <div class="step">
+              <span class="step-num">5</span>
+              <div class="step-info"><strong>Serum</strong><span class="text-xs text-muted">Beauty of Joseon Glow Serum</span></div>
+              <span class="badge badge-success">Active</span>
+            </div>
+            <div class="step">
+              <span class="step-num">6</span>
+              <div class="step-info"><strong>Moisturizer</strong><span class="text-xs text-muted">Laneige Water Bank — running low</span></div>
+              <button class="btn btn-primary btn-sm">Reorder</button>
+            </div>
+            <div class="step">
+              <span class="step-num">7</span>
+              <div class="step-info"><strong>Sunscreen</strong><span class="text-xs text-muted">Beauty of Joseon Relief Sun SPF50+</span></div>
+              <span class="badge badge-success">Active</span>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary w-full mt-4">+ Add a step · build full routine</button>
+        </div>
+      </section>
+
+      <!-- Wishlist -->
+      <section class="card card-elevated bento-wishlist">
+        <div class="card-padded">
+          <div class="row justify-between mb-4">
+            <div>
+              <div class="eyebrow">Wishlist · 7 saved</div>
+              <h2 class="h2 mt-1">Saved for later</h2>
+            </div>
+            <a href="#wishlist" class="btn btn-ghost btn-sm">All →</a>
+          </div>
+
+          <div class="wish-grid">
+            <div class="product-card">
+              <div class="product-card-media"><img src="https://placehold.co/300x300/d97a8a/ffffff?text=TIRTIR+Red" alt="TIRTIR Mask Fit Red" loading="lazy"></div>
+              <div class="product-card-body">
+                <div class="product-card-brand">TIRTIR</div>
+                <div class="product-card-title">Mask Fit Red Cushion</div>
+                <div class="product-card-meta"><span>★ 4.6</span><span>·</span><span>18g</span></div>
+                <div class="product-card-price">S$32.00</div>
+              </div>
+              <div class="product-card-actions">
+                <button class="btn btn-primary btn-sm flex-1">Add to cart</button>
+                <button class="btn btn-ghost btn-icon">×</button>
+              </div>
+            </div>
+
+            <div class="product-card">
+              <div class="product-card-media"><img src="https://placehold.co/300x300/7a8a8a/ffffff?text=Round+Lab" alt="Round Lab" loading="lazy"></div>
+              <div class="product-card-body">
+                <div class="product-card-brand">Round Lab</div>
+                <div class="product-card-title">1025 Dokdo Lotion</div>
+                <div class="product-card-meta"><span>★ 4.8</span><span>·</span><span>200ml</span></div>
+                <div class="product-card-price">S$26.00</div>
+              </div>
+              <div class="product-card-actions">
+                <button class="btn btn-primary btn-sm flex-1">Add to cart</button>
+                <button class="btn btn-ghost btn-icon">×</button>
+              </div>
+            </div>
+
+            <div class="product-card">
+              <div class="product-card-media"><img src="https://placehold.co/300x300/0066cc/ffffff?text=COSRX" alt="COSRX Acne Patch" loading="lazy"></div>
+              <div class="product-card-body">
+                <div class="product-card-brand">COSRX</div>
+                <div class="product-card-title">Acne Pimple Master Patch</div>
+                <div class="product-card-meta"><span>★ 4.8</span><span>·</span><span>24 ct</span></div>
+                <div class="product-card-price">S$8.50</div>
+              </div>
+              <div class="product-card-actions">
+                <button class="btn btn-primary btn-sm flex-1">Add to cart</button>
+                <button class="btn btn-ghost btn-icon">×</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Subscriptions -->
+      <section class="card card-elevated bento-subs">
+        <div class="card-padded">
+          <div class="row justify-between mb-3">
+            <div>
+              <div class="eyebrow">Subscriptions · auto-delivery</div>
+              <h2 class="h2 mt-1">Never run out</h2>
+            </div>
+            <button class="btn btn-ghost btn-sm">+ New sub</button>
+          </div>
+
+          <div class="sub-row">
+            <img src="https://placehold.co/64x64/0066cc/ffffff?text=COSRX" alt="">
+            <div class="flex-1">
+              <div style="font-weight:600;">COSRX Snail 96 Mucin Power Essence</div>
+              <div class="text-xs text-muted">Every 60 days · next delivery <strong>Oct 14</strong></div>
+            </div>
+            <span class="badge badge-success">10% off</span>
+            <button class="btn btn-ghost btn-icon">⋯</button>
+          </div>
+
+          <div class="sub-row">
+            <img src="https://placehold.co/64x64/1a3a6e/ffffff?text=BOJ" alt="">
+            <div class="flex-1">
+              <div style="font-weight:600;">Beauty of Joseon Relief Sun SPF50+</div>
+              <div class="text-xs text-muted">Every 90 days · next delivery <strong>Dec 02</strong></div>
+            </div>
+            <span class="badge badge-success">15% off</span>
+            <button class="btn btn-ghost btn-icon">⋯</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Addresses -->
+      <section class="card card-elevated bento-addresses">
+        <div class="card-padded">
+          <div class="row justify-between mb-3">
+            <div>
+              <div class="eyebrow">Saved addresses</div>
+              <h2 class="h2 mt-1">3 addresses</h2>
+            </div>
+            <button class="btn btn-ghost btn-sm">+ Add</button>
+          </div>
+
+          <div class="addr-row default">
+            <div class="row justify-between mb-2">
+              <strong>Home</strong>
+              <span class="badge badge-brand">DEFAULT</span>
+            </div>
+            <div class="text-sm text-muted">Aria Setiawan<br/>88 Orchard Road, #12-04, Singapore 238858<br/>+65 8123 4567</div>
+            <div class="row mt-2" style="gap:var(--sp-2);">
+              <button class="btn btn-ghost btn-sm">Edit</button>
+              <button class="btn btn-ghost btn-sm">Use for next order</button>
+            </div>
+          </div>
+
+          <div class="addr-row">
+            <div class="row justify-between mb-2">
+              <strong>Office</strong>
+              <button class="btn btn-ghost btn-sm">Edit</button>
+            </div>
+            <div class="text-sm text-muted">Seeds Pte Ltd · c/o Aria<br/>1 Raffles Place, #44-01, Singapore 048616<br/>+65 8123 4567</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Skin profile / quiz -->
+      <section class="card card-glass bento-skin">
+        <div class="card-padded">
+          <div style="font-size:48px;" class="anim-float">🪞</div>
+          <div class="eyebrow mt-3">Skin Profile</div>
+          <h2 class="h2 mt-1">Complete your profile</h2>
+          <p class="text-sm text-muted mt-2">Tell us about your skin type, concerns, and routine — get personalized recommendations and re-order reminders.</p>
+
+          <div class="skin-progress mt-4">
+            <div class="skin-step done">1. Skin type</div>
+            <div class="skin-step done">2. Concerns</div>
+            <div class="skin-step">3. Sensitivities</div>
+            <div class="skin-step">4. Goals</div>
+          </div>
+
+          <button class="btn btn-primary mt-4 w-full">Continue profile →</button>
+        </div>
+      </section>
+
+      <!-- My reviews -->
+      <section class="card card-elevated bento-reviews">
+        <div class="card-padded">
+          <div class="row justify-between mb-3">
+            <div>
+              <div class="eyebrow">My reviews</div>
+              <h2 class="h2 mt-1">5 reviews · 4.8★ avg</h2>
+            </div>
+            <a href="#reviews" class="btn btn-ghost btn-sm">All →</a>
+          </div>
+
+          <div class="review-row">
+            <div class="review-stars">★★★★★</div>
+            <div class="flex-1">
+              <div style="font-weight:600;">COSRX Snail 96 — game changer for barrier repair</div>
+              <div class="text-xs text-muted">Reviewed Sep 18 · 23 helpful</div>
+            </div>
+            <span class="badge">Published</span>
+          </div>
+          <div class="review-row">
+            <div class="review-stars">★★★★★</div>
+            <div class="flex-1">
+              <div style="font-weight:600;">Laneige Lip Mask — worth the hype</div>
+              <div class="text-xs text-muted">Reviewed Aug 02 · 14 helpful</div>
+            </div>
+            <span class="badge">Published</span>
+          </div>
+          <div class="review-row" style="opacity:0.7;">
+            <div class="review-stars">☆☆☆☆☆</div>
+            <div class="flex-1">
+              <div style="font-weight:600;color:var(--c-text-muted);">Some By Mi Miracle Toner — pending review</div>
+              <div class="text-xs text-muted">Delivered Sep 11 · 14-day window</div>
+            </div>
+            <button class="btn btn-primary btn-sm">Write</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Support -->
+      <section class="card card-elevated bento-support">
+        <div class="card-padded">
+          <div class="eyebrow">Need help?</div>
+          <h2 class="h2 mt-1">We're online</h2>
+          <p class="text-sm text-muted mt-2">Avg response time today: <strong>3 min</strong></p>
+
+          <div class="row mt-4 gap-2">
+            <button class="btn btn-primary btn-sm flex-1">💬 WhatsApp</button>
+            <button class="btn btn-secondary btn-sm flex-1">✉️ Email</button>
+          </div>
+          <button class="btn btn-ghost btn-sm w-full mt-2">Browse FAQ</button>
+
+          <div class="ticket-row mt-4">
+            <div>
+              <div class="text-sm" style="font-weight:600;">Order SINDO-M2P7K5 payment</div>
+              <div class="text-xs text-muted">Open · last reply 2h ago</div>
+            </div>
+            <span class="badge badge-info">OPEN</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Wallet & credits -->
+      <section class="card card-elevated bento-wallet">
+        <div class="card-padded">
+          <div class="row justify-between mb-3">
+            <div>
+              <div class="eyebrow">Wallet & Credits</div>
+              <h2 class="h2 mt-1">S$18.50 available</h2>
+            </div>
+            <button class="btn btn-ghost btn-sm">History</button>
+          </div>
+
+          <div class="credit-row">
+            <div class="credit-icon" style="background:var(--c-brand-surface);color:var(--c-brand-deep);">★</div>
+            <div class="flex-1">
+              <div style="font-weight:600;">Loyalty credit</div>
+              <div class="text-xs text-muted">2,840 pts → S$14.20 redeemable</div>
+            </div>
+            <button class="btn btn-primary btn-sm">Use</button>
+          </div>
+
+          <div class="credit-row">
+            <div class="credit-icon" style="background:var(--c-success-bg);color:var(--c-success);">$</div>
+            <div class="flex-1">
+              <div style="font-weight:600;">Referral credit</div>
+              <div class="text-xs text-muted">S$4.30 from 1 successful referral</div>
+            </div>
+            <button class="btn btn-secondary btn-sm">Share</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============= Notification drawer ============= -->
+<div id="notif-drawer" class="drawer">
+  <div class="drawer-head">
+    <h3>Notifications</h3>
+    <button class="btn btn-ghost btn-sm" id="notif-close">Close</button>
+  </div>
+  <div class="drawer-body">
+    <div class="notif">
+      <div class="notif-dot"></div>
+      <div>
+        <div style="font-weight:600;">Order SINDO-K6H2N9 has shipped 🚚</div>
+        <div class="text-xs text-muted mt-1">Sindo Shipping · arriving Friday</div>
+      </div>
+      <span class="text-xs text-muted">2m</span>
+    </div>
+    <div class="notif">
+      <div class="notif-dot"></div>
+      <div>
+        <div style="font-weight:600;">Laneige Water Bank running low</div>
+        <div class="text-xs text-muted mt-1">Tap to reorder with 10% loyalty discount</div>
+      </div>
+      <span class="text-xs text-muted">1h</span>
+    </div>
+    <div class="notif">
+      <div></div>
+      <div>
+        <div style="font-weight:600;">TIRTIR Mask Fit back in stock</div>
+        <div class="text-xs text-muted mt-1">An item on your wishlist is available again</div>
+      </div>
+      <span class="text-xs text-muted">3h</span>
+    </div>
+    <div class="notif">
+      <div></div>
+      <div>
+        <div style="font-weight:600;">Welcome to Sindo K-Beauty 🎉</div>
+        <div class="text-xs text-muted mt-1">You earned 200 welcome points</div>
+      </div>
+      <span class="text-xs text-muted">2d</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============= JS ============= -->
+<script>
+(function () {
+  // Theme toggle
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('theme-toggle');
+  themeBtn.addEventListener('click', () => {
+    root.classList.toggle('auto-dark');
+    themeBtn.textContent = root.classList.contains('auto-dark') ? '☀️' : '🌙';
+  });
+
+  // Notification drawer
+  const drawer = document.getElementById('notif-drawer');
+  document.getElementById('notif-btn').addEventListener('click', () => drawer.classList.add('open'));
+  document.getElementById('notif-close').addEventListener('click', () => drawer.classList.remove('open'));
+  drawer.addEventListener('click', (e) => { if (e.target === drawer) drawer.classList.remove('open'); });
+
+  // Routine tabs
+  document.querySelectorAll('.routine-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.routine-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // Sidebar link active state on scroll (simple hash-based)
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    });
+  });
+})();
+</script>
+</body>
+</html>

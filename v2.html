@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c4476a">
+<title>Sindo K-Beauty · Authentic Korean skincare, shipped from Singapore</title>
+<meta name="description" content="Curated K-beauty essentials from COSRX, Beauty of Joseon, Laneige, Anua, SKIN1004, and more. Authentic Korean skincare shipped from Singapore via Sindo Shipping.">
+<link rel="canonical" href="https://seeds.scaleupcrm.com/v2">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="design-system.css?v=v2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3EK%3C/text%3C/svg%3E">
+
+<style>
+  body { background: var(--c-bg); }
+
+  /* Hero */
+  .hero-v2 {
+    position: relative;
+    padding: var(--sp-12) 0 var(--sp-16);
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 80% 60% at 100% 0%, rgba(244, 143, 177, 0.25), transparent 60%),
+      radial-gradient(ellipse 60% 80% at 0% 100%, rgba(252, 228, 236, 0.6), transparent 60%),
+      var(--c-bg);
+  }
+  .hero-v2::before {
+    content: ''; position: absolute; top: -120px; right: -100px;
+    width: 500px; height: 500px;
+    background: linear-gradient(135deg, var(--c-brand-light), var(--c-brand));
+    border-radius: 50%;
+    filter: blur(120px); opacity: 0.3;
+    animation: blob 12s ease-in-out infinite;
+  }
+  .hero-v2-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1.2fr 1fr; gap: var(--sp-12); align-items: center; }
+  @media (max-width: 900px) { .hero-v2-inner { grid-template-columns: 1fr; } }
+  .hero-v2 h1 { margin-top: var(--sp-3); }
+  .hero-v2-lede { font-size: var(--fs-lg); color: var(--c-text-2); max-width: 540px; margin-top: var(--sp-5); }
+  .hero-v2-ctas { display: flex; gap: var(--sp-3); margin-top: var(--sp-8); flex-wrap: wrap; }
+  .hero-v2-meta { display: flex; gap: var(--sp-6); margin-top: var(--sp-8); padding-top: var(--sp-6); border-top: 1px solid var(--c-border); }
+  .hero-v2-meta-item { font-size: var(--fs-xs); color: var(--c-text-muted); }
+  .hero-v2-meta-item strong { display: block; font-size: var(--fs-2xl); font-family: var(--ff-display); font-weight: 500; color: var(--c-text); letter-spacing: -0.02em; }
+
+  .hero-v2-art {
+    position: relative; aspect-ratio: 4/5; max-height: 600px;
+    border-radius: var(--r-2xl);
+    overflow: hidden;
+    box-shadow: var(--sh-xl);
+    background: linear-gradient(135deg, #fce4ec, #f48fb1);
+  }
+  .hero-v2-art-img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hero-v2-art:hover .hero-v2-art-img { transform: scale(1.04); }
+  .hero-v2-art-tag {
+    position: absolute; top: var(--sp-5); left: var(--sp-5);
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+    padding: var(--sp-2) var(--sp-4);
+    border-radius: var(--r-full);
+    font-size: var(--fs-xs); font-weight: 700; color: var(--c-brand);
+    box-shadow: var(--sh-sm);
+  }
+  .hero-v2-art-floating {
+    position: absolute; bottom: var(--sp-5); right: var(--sp-5);
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-md);
+    display: flex; align-items: center; gap: var(--sp-3);
+    max-width: 240px;
+  }
+  .hero-v2-art-floating .ico { font-size: 24px; }
+  .hero-v2-art-floating strong { font-size: var(--fs-sm); display: block; }
+  .hero-v2-art-floating .text-xs { color: var(--c-text-muted); }
+
+  /* Section header */
+  .section-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: var(--sp-6); gap: var(--sp-4);
+  }
+  .section-head h2 { font-family: var(--ff-display); font-size: var(--fs-3xl); font-weight: 500; letter-spacing: -0.025em; line-height: 1.0; }
+
+  /* Featured carousel-style strip */
+  .featured-strip-v2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-4); }
+  @media (max-width: 900px) { .featured-strip-v2 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .featured-strip-v2 { grid-template-columns: 1fr; } }
+
+  /* Brand pills */
+  .brand-row { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-6); }
+  .brand-pill {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-full);
+    font-size: var(--fs-sm); font-weight: 600;
+    transition: all var(--t-fast);
+  }
+  .brand-pill:hover { border-color: var(--c-brand); color: var(--c-brand); transform: translateY(-2px); box-shadow: var(--sh-sm); }
+  .brand-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Categories bento */
+  .cat-bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--sp-3); }
+  @media (max-width: 900px) { .cat-bento { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { .cat-bento { grid-template-columns: repeat(2, 1fr); } }
+  .cat-tile {
+    aspect-ratio: 1;
+    border-radius: var(--r-lg);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    padding: var(--sp-4);
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: all var(--t-base);
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+  }
+  .cat-tile:hover { transform: translateY(-4px); box-shadow: var(--sh-md); border-color: var(--c-brand-light); }
+  .cat-tile .cat-emoji { font-size: 32px; }
+  .cat-tile .cat-name { font-weight: 600; font-size: var(--fs-sm); }
+  .cat-tile .cat-count { font-size: var(--fs-xs); color: var(--c-text-muted); font-family: var(--ff-mono); }
+
+  /* Trust bento */
+  .trust-bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-4); }
+  @media (max-width: 720px) { .trust-bento { grid-template-columns: 1fr; } }
+  .trust-card { padding: var(--sp-6); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-xl); display: flex; flex-direction: column; gap: var(--sp-3); transition: all var(--t-base); }
+  .trust-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+  .trust-card-icon { width: 48px; height: 48px; border-radius: var(--r-md); background: var(--c-brand-surface); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .trust-card h3 { font-family: var(--ff-display); font-size: var(--fs-xl); font-weight: 500; letter-spacing: -0.015em; }
+  .trust-card p { color: var(--c-text-muted); font-size: var(--fs-sm); line-height: 1.55; }
+
+  /* Testimonial */
+  .testimonial-card { padding: var(--sp-8); background: linear-gradient(135deg, var(--c-brand-surface), var(--c-brand-bg)); border-radius: var(--r-2xl); display: grid; grid-template-columns: 1fr auto; gap: var(--sp-6); align-items: center; }
+  @media (max-width: 720px) { .testimonial-card { grid-template-columns: 1fr; } }
+  .testimonial-quote { font-family: var(--ff-display); font-size: var(--fs-2xl); font-weight: 400; line-height: 1.3; letter-spacing: -0.015em; color: var(--c-text); }
+  .testimonial-author { display: flex; align-items: center; gap: var(--sp-3); margin-top: var(--sp-4); }
+  .testimonial-author .avatar { background: linear-gradient(135deg, var(--c-brand), var(--c-brand-deep)); }
+  .testimonial-stats { display: flex; gap: var(--sp-6); }
+  .testimonial-stat { text-align: center; }
+  .testimonial-stat .num { font-family: var(--ff-display); font-size: var(--fs-3xl); font-weight: 500; color: var(--c-brand); letter-spacing: -0.025em; line-height: 1; }
+  .testimonial-stat .label { font-size: var(--fs-xs); color: var(--c-text-muted); margin-top: 4px; }
+
+  /* Banner */
+  .shipping-strip {
+    margin-top: var(--sp-12);
+    padding: var(--sp-8) var(--sp-6);
+    background: linear-gradient(135deg, #1a0d12 0%, #2a1a22 100%);
+    border-radius: var(--r-2xl);
+    color: white;
+    display: grid; grid-template-columns: 1fr auto; gap: var(--sp-6); align-items: center;
+  }
+  @media (max-width: 720px) { .shipping-strip { grid-template-columns: 1fr; text-align: center; } }
+  .shipping-strip h3 { font-family: var(--ff-display); font-size: var(--fs-2xl); font-weight: 500; letter-spacing: -0.02em; color: white; }
+  .shipping-strip p { color: rgba(255,255,255,0.7); font-size: var(--fs-base); margin-top: var(--sp-2); }
+  .shipping-strip .rate { font-family: var(--ff-display); font-size: var(--fs-3xl); font-weight: 500; color: var(--c-brand-light); }
+  .shipping-strip .rate small { display: block; font-family: var(--ff-body); font-size: var(--fs-xs); color: rgba(255,255,255,0.6); margin-top: 4px; }
+
+  /* Section spacing */
+  section { padding: var(--sp-12) 0; }
+  section.tight { padding: var(--sp-8) 0; }
+
+  /* Footer */
+  footer { background: #1a0d12; color: rgba(255,255,255,0.7); padding: var(--sp-12) 0 var(--sp-6); margin-top: var(--sp-12); }
+  footer h4 { color: white; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-3); text-transform: uppercase; letter-spacing: 0.08em; }
+  footer a { color: rgba(255,255,255,0.7); transition: color var(--t-fast); }
+  footer a:hover { color: var(--c-brand-light); }
+  footer ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--fs-sm); }
+  .footer-legal { background: rgba(255,255,255,0.04); border-radius: var(--r-md); padding: var(--sp-4); font-size: var(--fs-xs); line-height: 1.55; margin-top: var(--sp-6); color: rgba(255,255,255,0.6); }
+  .footer-legal strong { color: var(--c-brand-light); }
+
+  /* Responsive nav toggle */
+  .nav-cat { display: flex; gap: var(--sp-1); }
+  .nav-cat a { padding: var(--sp-2) var(--sp-3); border-radius: var(--r-md); font-size: var(--fs-sm); font-weight: 500; color: var(--c-text-2); transition: all var(--t-fast); }
+  .nav-cat a:hover { background: var(--c-surface-2); color: var(--c-text); }
+  @media (max-width: 720px) { .nav-cat { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- ============= TOP BAR ============= -->
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a href="v2.html" class="topbar-brand">Sindo K-Beauty</a>
+    <div class="topbar-search">
+      <input class="input" type="search" placeholder="Search products, ingredients, brands…" aria-label="Search">
+    </div>
+    <nav class="nav-cat">
+      <a href="#best-sellers">Best</a>
+      <a href="#shop">Shop</a>
+      <a href="#brands">Brands</a>
+      <a href="#routine">Routine</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="topbar-actions">
+      <a href="dashboard.html" class="btn btn-ghost btn-icon" aria-label="Account" title="Account">👤</a>
+      <a href="cart.html" class="btn btn-ghost btn-icon" aria-label="Cart" title="Cart">🛒</a>
+      <a href="#shop" class="btn btn-primary btn-sm" style="margin-left:var(--sp-2);">Shop now</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============= HERO ============= -->
+<section class="hero-v2">
+  <div class="container">
+    <div class="hero-v2-inner">
+      <div>
+        <span class="eyebrow">Curated K-Beauty · Shipped from Singapore</span>
+        <h1 class="display-1 mt-3">Glass skin, <span class="gradient-text">delivered.</span></h1>
+        <p class="hero-v2-lede">Routine-step curation from COSRX, Beauty of Joseon, Laneige, Anua, SKIN1004 — sourced from authorized Korean distributors, shipped worldwide by Sindo Shipping.</p>
+        <div class="hero-v2-ctas">
+          <a href="#shop" class="btn btn-primary btn-lg">Shop best-sellers →</a>
+          <a href="#routine" class="btn btn-secondary btn-lg">Build my routine</a>
+        </div>
+        <div class="hero-v2-meta">
+          <div class="hero-v2-meta-item"><strong>12</strong>curated products</div>
+          <div class="hero-v2-meta-item"><strong>9</strong>Korean brands</div>
+          <div class="hero-v2-meta-item"><strong>5–10d</strong>delivery to most countries</div>
+        </div>
+      </div>
+      <div class="hero-v2-art">
+        <img class="hero-v2-art-img" src="https://placehold.co/800x1000/fce4ec/c4476a?text=COSRX+Snail+96&font=oswald" alt="COSRX Advanced Snail 96 Mucin Power Essence — 96% snail secretion filtrate, the global #1 essence">
+        <div class="hero-v2-art-tag">★ 4.8 · 28,431 reviews</div>
+        <div class="hero-v2-art-floating">
+          <div class="ico">✨</div>
+          <div>
+            <strong>100% Original</strong>
+            <span class="text-xs">Authenticity guaranteed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= TRUST BENTO ============= -->
+<section class="tight">
+  <div class="container">
+    <div class="trust-bento stagger">
+      <div class="trust-card">
+        <div class="trust-card-icon">💯</div>
+        <h3>100% Original Korean</h3>
+        <p>Sourced from authorized Korean distributors. Authenticity guaranteed or full refund. We don't do grey-market.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-card-icon">🚚</div>
+        <h3>Sindo Shipping</h3>
+        <p>5-stage tracking from Korean warehouse to your door. Auto tracking number the moment your payment is confirmed.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-card-icon">🪞</div>
+        <h3>Routine-based curation</h3>
+        <p>Every product fits a real step in a 10-step routine — not influencer bait. Built by people who actually use these.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= BEST SELLERS ============= -->
+<section id="best-sellers">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">This week's best-sellers</span>
+        <h2>The cult favorites</h2>
+      </div>
+      <a href="#shop" class="btn btn-ghost">View all →</a>
+    </div>
+    <div id="featured" class="featured-strip-v2 stagger"></div>
+  </div>
+</section>
+
+<!-- ============= SHOP BY CATEGORY ============= -->
+<section id="shop" style="background:var(--c-surface-2);">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Shop by routine step</span>
+        <h2>Build your routine</h2>
+      </div>
+    </div>
+    <div id="cat-tiles" class="cat-bento stagger"></div>
+
+    <div id="products-by-cat" class="mt-8" style="display:flex;flex-direction:column;gap:var(--sp-12);"></div>
+  </div>
+</section>
+
+<!-- ============= BRANDS ============= -->
+<section id="brands">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">9 trusted Korean brands</span>
+        <h2>Why these brands</h2>
+      </div>
+    </div>
+    <div id="brand-pills" class="brand-row stagger"></div>
+
+    <div class="trust-bento stagger mt-6">
+      <div class="trust-card"><div class="trust-card-icon" style="background:#0066cc20;color:#0066cc;">C</div><h3>COSRX</h3><p>Evidence-driven snail mucin and acne care. 20+ years of clinical data, not influencer marketing.</p></div>
+      <div class="trust-card"><div class="trust-card-icon" style="background:#1a3a6e20;color:#1a3a6e;">B</div><h3>Beauty of Joseon</h3><p>Modern formulations from Joseon Dynasty court skincare. Gold standard for sensitive-skin SPF.</p></div>
+      <div class="trust-card"><div class="trust-card-icon" style="background:#7ab8d820;color:#7ab8d8;">L</div><h3>Laneige</h3><p>Premium hydration specialists. Dermatologist-recommended Water Bank and Lip Sleeping Mask.</p></div>
+      <div class="trust-card"><div class="trust-card-icon" style="background:#3a8a8a20;color:#3a8a8a;">A</div><h3>Anua</h3><p>Heartleaf (Houttuynia) experts. The 2025 viral toner for reactive, redness-prone skin.</p></div>
+      <div class="trust-card"><div class="trust-card-icon" style="background:#4a9eb820;color:#4a9eb8;">S</div><h3>SKIN1004</h3><p>Madagascar Centella specialists. Every product is centella-forward, formulated for compromised-skin recovery.</p></div>
+      <div class="trust-card"><div class="trust-card-icon" style="background:#d97a3a20;color:#d97a3a;">S</div><h3>Some By Mi</h3><p>AHA · BHA · PHA chemical exfoliation pioneers. The clinic-favorite Miracle Toner.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= ROUTINE BUILDER PROMO ============= -->
+<section id="routine" style="background:linear-gradient(135deg, var(--c-brand-bg), var(--c-brand-surface));">
+  <div class="container">
+    <div class="testimonial-card">
+      <div>
+        <span class="eyebrow">New · Routine Builder</span>
+        <p class="testimonial-quote mt-2">"Tell us your skin type and concerns. We'll build a personalized 6–10 step routine, track re-orders, and remind you before anything runs out."</p>
+        <div class="testimonial-author">
+          <div class="avatar avatar-lg">A</div>
+          <div>
+            <strong>Aria Setiawan</strong>
+            <div class="text-xs text-muted">Gold tier · 2,840 pts · 9-step routine</div>
+          </div>
+        </div>
+        <a href="dashboard.html" class="btn btn-primary btn-lg mt-6">Try the routine builder →</a>
+      </div>
+      <div class="testimonial-stats">
+        <div class="testimonial-stat"><div class="num mono">12k+</div><div class="label">routines built</div></div>
+        <div class="testimonial-stat"><div class="num mono">4.8</div><div class="label">★ avg rating</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= SHIPPING STRIP ============= -->
+<section style="padding:var(--sp-8) 0;">
+  <div class="container">
+    <div class="shipping-strip">
+      <div>
+        <span class="eyebrow" style="color:var(--c-brand-light);">DELIVERY PARTNER</span>
+        <h3>Sindo Shipping · Singapore → Worldwide</h3>
+        <p>5-stage tracking. ETA 5–10 days. Auto tracking number the moment your bank-transfer payment is confirmed.</p>
+      </div>
+      <div style="text-align:right;">
+        <div class="rate">S$3<small>/100 g shipping</small></div>
+        <div class="text-xs mt-2" style="color:rgba(255,255,255,0.6);">+ 10% service markup</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= ABOUT STRIP ============= -->
+<section id="about" class="tight">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-12);align-items:center;" class="hero-v2-inner">
+      <div class="hero-v2-art" style="max-height:480px;aspect-ratio:1;">
+        <img class="hero-v2-art-img" src="https://placehold.co/800x800/8b2a4a/ffffff?text=Powered+by+Katalog.id&font=oswald" alt="Sindo K-Beauty — Powered by Katalog.id">
+      </div>
+      <div>
+        <span class="eyebrow">About Sindo K-Beauty</span>
+        <h2 class="display-3 mt-3">A K-beauty storefront,<br/><span class="gradient-text">not a marketplace.</span></h2>
+        <p class="hero-v2-lede mt-4">Every product on this storefront is hand-picked by routine step, sourced from authorized Korean distributors, and shipped from Singapore via Sindo Shipping. We're a brand, not a reseller platform — which means we stand behind every recommendation.</p>
+        <div class="row mt-6 gap-3">
+          <a href="dashboard.html" class="btn btn-primary">View dashboard demo</a>
+          <a href="#shop" class="btn btn-secondary">Browse catalog</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= FOOTER ============= -->
+<footer>
+  <div class="container">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:var(--sp-8);" class="footer-grid">
+      <div>
+        <h4 style="font-family:var(--ff-display);font-size:var(--fs-xl);font-weight:500;color:white;text-transform:none;letter-spacing:-0.02em;margin-bottom:var(--sp-3);">Sindo K-Beauty</h4>
+        <p style="font-size:var(--fs-sm);line-height:1.6;">Authentic K-beauty curated by routine step, shipped from Singapore via Sindo Shipping. A Seeds Pte Ltd brand.</p>
+        <div class="row mt-4 gap-2">
+          <a href="#" class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,0.7);">Instagram</a>
+          <a href="#" class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,0.7);">TikTok</a>
+          <a href="#" class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,0.7);">WhatsApp</a>
+        </div>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#best-sellers">Best-sellers</a></li>
+          <li><a href="#shop">All products</a></li>
+          <li><a href="#brands">Brands</a></li>
+          <li><a href="#routine">Routine builder</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <ul>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Shipping</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <ul>
+          <li><a href="dashboard.html">My dashboard</a></li>
+          <li><a href="dashboard.html#orders">Orders</a></li>
+          <li><a href="dashboard.html#wishlist">Wishlist</a></li>
+          <li><a href="dashboard.html#routine">My routine</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p style="margin:0 0 8px;">© 2026 Seeds Pte Ltd. All rights reserved. <strong>Sindo</strong> is a brand of Seeds Pte Ltd. <strong>Powered by Katalog.id</strong> · Authentic Korean beauty products sourced from authorized distributors.</p>
+      <p style="margin:0 0 8px;"><strong>Product Reviews Disclaimer:</strong> Product reviews reflect the views and opinions expressed by individual contributors and not those of Sindo K-Beauty. Sindo K-Beauty does not verify or endorse any claims made in these reviews. Customer ratings and review counts are aggregated from publicly available sources; individual results may vary.</p>
+      <p style="margin:0 0 8px;"><strong>FDA / Regulatory Disclaimer:</strong> Statements regarding cosmetic products have not been evaluated by the U.S. Food and Drug Administration. These products are not intended to diagnose, treat, cure, or prevent any disease or health condition. Reviews citing "results" or "efficacy" describe the personal experience of the reviewer, not a guarantee of performance.</p>
+      <p style="margin:0;"><strong>Brand & Trademark Notice:</strong> All brand names (including COSRX, Beauty of Joseon, Laneige, Anua, SKIN1004, Some By Mi, Innisfree, Round Lab, TIRTIR) and product names referenced on this storefront are the property of their respective owners. Mention does not imply endorsement by or affiliation with the brand owners.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============= DATA + RENDER ============= -->
+<script>
+// Same data as kbeauty.html — could be extracted to kbeauty-data.js
+const KBEAUTY = {
+  products: [
+    { id:"cosrx-snail-96", brand:"COSRX", title:"Advanced Snail 96 Mucin Power Essence", cat:"Serums & Essences", priceSgd:22.50, rating:4.8, reviews:28431, image:"https://placehold.co/600x600/0066cc/ffffff?text=COSRX+Snail+96&font=oswald", size:"100ml", shortDesc:"96% snail mucin. Repairs, hydrates, plumps.", weightGrams:180, featured:true },
+    { id:"boj-sun-relief", brand:"Beauty of Joseon", title:"Relief Sun SPF50+ PA++++", cat:"Sun Care", priceSgd:18.00, rating:4.9, reviews:41208, image:"https://placehold.co/600x600/1a3a6e/ffffff?text=BOJ+Sun&font=oswald", size:"50ml", shortDesc:"Rice + probiotics. No white cast.", weightGrams:90, featured:true },
+    { id:"boj-glow-serum", brand:"Beauty of Joseon", title:"Glow Deep Serum Rice + Alpha Arbutin", cat:"Serums & Essences", priceSgd:22.00, rating:4.7, reviews:18912, image:"https://placehold.co/600x600/1a3a6e/ffffff?text=BOJ+Glow&font=oswald", size:"30ml", shortDesc:"2% alpha arbutin. Brightens dark spots.", weightGrams:60, featured:true },
+    { id:"laneige-lip-mask", brand:"Laneige", title:"Lip Sleeping Mask Berry", cat:"Lip Care", priceSgd:20.00, rating:4.8, reviews:52109, image:"https://placehold.co/600x600/7ab8d8/ffffff?text=Laneige&font=oswald", size:"20g", shortDesc:"Overnight berry mask. The #1 lip mask.", weightGrams:60, featured:true },
+    { id:"laneige-water-bank", brand:"Laneige", title:"Water Bank Blue Hyaluronic Cream", cat:"Moisturizers & Creams", priceSgd:38.00, rating:4.7, reviews:8204, image:"https://placehold.co/600x600/7ab8d8/ffffff?text=Water+Bank&font=oswald", size:"50ml", shortDesc:"Blue Hyaluronic Acid. 24h hydration.", weightGrams:130 },
+    { id:"anua-heartleaf", brand:"Anua", title:"Heartleaf 77% Soothing Toner", cat:"Toner & Essence", priceSgd:28.00, rating:4.9, reviews:38502, image:"https://placehold.co/600x600/3a8a8a/ffffff?text=Anua&font=oswald", size:"250ml", shortDesc:"77% Houttuynia. Soothes reactive skin.", weightGrams:290 },
+    { id:"skin1004-centella", brand:"SKIN1004", title:"Madagascar Centella Ampoule", cat:"Serums & Essences", priceSgd:25.00, rating:4.8, reviews:16720, image:"https://placehold.co/600x600/4a9eb8/ffffff?text=SKIN1004&font=oswald", size:"100ml", shortDesc:"Centella Asiatica. Repairs compromised skin.", weightGrams:180 },
+    { id:"somebymi-toner", brand:"Some By Mi", title:"AHA-BHA-PHA 30 Days Miracle Toner", cat:"Toner & Essence", priceSgd:21.00, rating:4.7, reviews:24108, image:"https://placehold.co/600x600/d97a3a/ffffff?text=SBM&font=oswald", size:"150ml", shortDesc:"Triple-acid toner. Clinic-favorite for acne.", weightGrams:210 },
+    { id:"innisfree-green-tea", brand:"Innisfree", title:"Green Tea Seed Hyaluronic Cream", cat:"Moisturizers & Creams", priceSgd:26.00, rating:4.6, reviews:12018, image:"https://placehold.co/600x600/5a8a3a/ffffff?text=Innisfree&font=oswald", size:"50ml", shortDesc:"Jeju green tea + 5-HA. Lightweight.", weightGrams:130 },
+    { id:"roundlab-1025", brand:"Round Lab", title:"1025 Dokdo Lotion", cat:"Moisturizers & Creams", priceSgd:26.00, rating:4.8, reviews:14709, image:"https://placehold.co/600x600/7a8a8a/ffffff?text=Round+Lab&font=oswald", size:"200ml", shortDesc:"Deep-sea water + 3-HA. Tropical-proof.", weightGrams:250 },
+    { id:"cosrx-pimple-patch", brand:"COSRX", title:"Acne Pimple Master Patch", cat:"Treatments & Patches", priceSgd:8.50, rating:4.8, reviews:67401, image:"https://placehold.co/600x600/0066cc/ffffff?text=Patch&font=oswald", size:"24 ct", shortDesc:"Hydrocolloid patches. Works overnight.", weightGrams:25 },
+    { id:"tirtir-cushion", brand:"TIRTIR", title:"Mask Fit Red Cushion 18 g (Refill)", cat:"Treatments & Patches", priceSgd:32.00, rating:4.6, reviews:9420, image:"https://placehold.co/600x600/d97a8a/ffffff?text=TIRTIR&font=oswald", size:"18g", shortDesc:"Mask Fit tech. 24h semi-matte.", weightGrams:80 }
+  ],
+  categories: ["Toner & Essence","Serums & Essences","Moisturizers & Creams","Sun Care","Treatments & Patches","Lip Care"],
+  brandColors: {"COSRX":"#0066cc","Beauty of Joseon":"#1a3a6e","Laneige":"#7ab8d8","Anua":"#3a8a8a","SKIN1004":"#4a9eb8","Some By Mi":"#d97a3a","Innisfree":"#5a8a3a","Round Lab":"#7a8a8a","TIRTIR":"#d97a8a"},
+  catEmoji: {"Toner & Essence":"💧","Serums & Essences":"✨","Moisturizers & Creams":"🥛","Sun Care":"☀️","Treatments & Patches":"🎯","Lip Care":"💋"}
+};
+KBEAUTY.products.sort((a,b)=>a.cat.localeCompare(b.cat));
+
+// Render best-sellers (top 4 by reviews)
+const featured = KBEAUTY.products.filter(p=>p.featured).sort((a,b)=>b.reviews-a.reviews).slice(0,4);
+document.getElementById('featured').innerHTML = featured.map(p => `
+  <article class="product-card">
+    <div class="product-card-media"><img src="${p.image}" alt="${p.title}" loading="lazy"></div>
+    <div class="product-card-body">
+      <div class="product-card-brand">${p.brand}</div>
+      <div class="product-card-title">${p.title}</div>
+      <div class="product-card-meta"><span>★ ${p.rating}</span><span>·</span><span>${p.size}</span></div>
+      <div class="product-card-price">S$${p.priceSgd.toFixed(2)}</div>
+    </div>
+    <div class="product-card-actions">
+      <button class="btn btn-primary btn-sm flex-1">Add to cart</button>
+      <button class="btn btn-ghost btn-icon" aria-label="Save">♡</button>
+    </div>
+  </article>
+`).join('');
+
+// Render category tiles
+document.getElementById('cat-tiles').innerHTML = KBEAUTY.categories.map(c => {
+  const count = KBEAUTY.products.filter(p=>p.cat===c).length;
+  return `
+    <a href="#cat-${c.toLowerCase().replace(/[^a-z0-9]+/g,'-')}" class="cat-tile">
+      <div class="cat-emoji">${KBEAUTY.catEmoji[c] || '✨'}</div>
+      <div>
+        <div class="cat-name">${c}</div>
+        <div class="cat-count">${count} product${count>1?'s':''}</div>
+      </div>
+    </a>
+  `;
+}).join('');
+
+// Render products by category
+document.getElementById('products-by-cat').innerHTML = KBEAUTY.categories.map(c => {
+  const items = KBEAUTY.products.filter(p=>p.cat===c);
+  return `
+    <section id="cat-${c.toLowerCase().replace(/[^a-z0-9]+/g,'-')}">
+      <div class="row justify-between mb-4">
+        <h2 class="display-3">${c} <span class="text-muted" style="font-family:var(--ff-body);font-size:var(--fs-md);font-weight:400;">(${items.length})</span></h2>
+        <a href="#" class="btn btn-ghost btn-sm">See all →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);" class="cat-products-grid">
+        ${items.map(p => `
+          <article class="product-card">
+            <div class="product-card-media"><img src="${p.image}" alt="${p.title}" loading="lazy"></div>
+            <div class="product-card-body">
+              <div class="product-card-brand">${p.brand}</div>
+              <div class="product-card-title">${p.title}</div>
+              <div class="product-card-meta"><span>★ ${p.rating}</span><span>·</span><span>${p.size}</span></div>
+              <div class="product-card-price">S$${p.priceSgd.toFixed(2)}</div>
+            </div>
+          </article>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}).join('');
+
+// Render brand pills
+const brands = [...new Set(KBEAUTY.products.map(p=>p.brand))];
+document.getElementById('brand-pills').innerHTML = brands.map(b => {
+  const count = KBEAUTY.products.filter(p=>p.brand===b).length;
+  return `
+    <a href="#" class="brand-pill">
+      <span class="dot" style="background:${KBEAUTY.brandColors[b]};"></span>
+      ${b}
+      <span style="color:var(--c-text-muted);font-weight:500;">(${count})</span>
+    </a>
+  `;
+}).join('');
+
+// Responsive grid for product lists
+const style = document.createElement('style');
+style.textContent = `@media (max-width: 900px) { .cat-products-grid { grid-template-columns: repeat(2, 1fr) !important; } } @media (max-width: 480px) { .cat-products-grid { grid-template-columns: 1fr !important; } } @media (max-width: 720px) { .footer-grid { grid-template-columns: 1fr 1fr !important; } }`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>
