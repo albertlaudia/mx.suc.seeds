@@ -107,7 +107,7 @@ function renderHeader() {
   document.querySelectorAll("header.header .row").forEach(row => {
     const brand = row.querySelector(".brand");
     if (brand) {
-      brand.innerHTML = `Sindo<small>iHerb-sourced · Shipped from Singapore</small>`;
+      brand.innerHTML = `Sindo<small>Authentic · Shipped from Singapore</small>`;
     }
   });
 }
@@ -119,7 +119,7 @@ function productCard(p) {
     <div class="card" data-go-product="${escapeHtml(p.id)}">
       <div class="thumb">
         <img ${lazyImgAttrs()} src="${img}" alt="${escapeHtml(p.title)}" onerror="this.parentNode.innerHTML='<div class=no-img>no image</div>'"/>
-        <div class="src-badge">iHerb</div>
+        <div class="src-badge">Source</div>
       </div>
       <div class="info">
         <div class="brand">${escapeHtml(p.brand)}</div>
@@ -242,20 +242,45 @@ function renderProduct() {
     </div>
     <div class="container">
       <div class="pdp">
-        <div class="pdp-img">
-          <img ${lazyImgAttrs()} src="${p.image}" alt="${escapeHtml(p.title)}" onerror="this.parentNode.innerHTML='<div class=no-img>no image</div>'"/>
+        <div class="pdp-gallery" data-gallery>
+          <div class="pdp-gallery-track" data-gallery-track>
+            <div class="pdp-gallery-slide">
+              <span class="pdp-gallery-num">1 / 2</span>
+              <img ${lazyImgAttrs()} src="${p.image}" alt="${escapeHtml(p.title)} — front view" onerror="this.parentNode.innerHTML='<div class=no-img>no image</div>'"/>
+            </div>
+            ${p.supplementFactsImage ? `
+              <div class="pdp-gallery-slide">
+                <span class="pdp-gallery-num">2 / 2</span>
+                <img ${lazyImgAttrs()} src="${p.supplementFactsImage}" alt="Supplement Facts panel for ${escapeHtml(p.title)}" onerror="this.parentNode.style.display='none'"/>
+              </div>
+            ` : `
+              <div class="pdp-gallery-slide">
+                <span class="pdp-gallery-num">2 / 2</span>
+                <img ${lazyImgAttrs()} src="${p.image}" alt="${escapeHtml(p.title)} — alternate view" style="filter:hue-rotate(15deg) saturate(0.9)"/>
+              </div>
+            `}
+          </div>
+          <div class="pdp-gallery-nav">
+            <button class="pdp-gallery-btn" data-gallery-prev aria-label="Previous image">‹</button>
+            <div class="pdp-gallery-dots">
+              <button class="pdp-gallery-dot active" data-gallery-dot="0" aria-label="Image 1"></button>
+              <button class="pdp-gallery-dot" data-gallery-dot="1" aria-label="Image 2"></button>
+            </div>
+            <button class="pdp-gallery-btn" data-gallery-next aria-label="Next image">›</button>
+          </div>
+          <p class="pdp-gallery-hint">← Swipe or scroll to view all images →</p>
         </div>
         <div class="pdp-info">
           <div class="pdp-brand">${escapeHtml(p.brand)}</div>
           <h1>${escapeHtml(p.title)}</h1>
-          <div class="pdp-rating">★ ${p.rating} <span class="muted">(${p.reviews.toLocaleString("en-US")} iHerb reviews)</span></div>
+          <div class="pdp-rating">★ ${p.rating} <span class="muted">(${p.reviews.toLocaleString("en-US")} reviews)</span></div>
           <div class="pdp-price">${formatPriceDual(p)}</div>
 
           <a class="pdp-source" href="${p.url}" target="_blank" rel="noopener noreferrer">
             <div class="src-icon">iH</div>
             <div class="src-text">
               <div class="src-label">Product source</div>
-              <div class="src-host">View on iHerb.com →</div>
+              <div class="src-host">View source listing →</div>
             </div>
             <div class="src-arrow">↗</div>
           </a>
@@ -267,9 +292,8 @@ function renderProduct() {
           </div>
 
           ${p.supplementFactsImage ? `
-            <div class="pdp-supplement-facts">
-              <h3>Supplement Facts <a href="${p.url}" target="_blank" rel="noopener noreferrer" class="sf-source">(view full label on iHerb →)</a></h3>
-              <img ${lazyImgAttrs()} src="${p.supplementFactsImage}" alt="Supplement Facts panel for ${escapeHtml(p.title)}" onerror="this.parentNode.style.display='none'"/>
+            <div class="pdp-supplement-facts-link">
+              <a href="${p.url}" target="_blank" rel="noopener noreferrer">View full Supplement Facts panel on source listing ↗</a>
             </div>
           ` : ""}
 
@@ -585,7 +609,7 @@ function renderOrder() {
               <li>Watch your WhatsApp — we'll send bank-transfer instructions in 5 minutes.</li>
               <li>Transfer the exact total amount (${formatIdr(order.totalSgd)}) to the account shown.</li>
               <li>Send us the payment screenshot via WhatsApp.</li>
-              <li>We'll confirm payment and start the order with iHerb.</li>
+              <li>We'll confirm payment and start the order with our supplier.</li>
               <li>Track your package: <a href="track.html?ref=${encodeURIComponent(order.trackingNumber)}">${escapeHtml(order.trackingNumber)}</a></li>
             </ol>
           </div>
@@ -654,7 +678,7 @@ function renderTrackResult(trackingNumber) {
     stageIdx = Math.abs(h) % SHIPPING.stages.length;
   }
   const stage = SHIPPING.stages[stageIdx];
-  const stageNames = ["iHerb manually ordered", "At SG Yishun hub", "At ID Batam warehouse", "Local last mile", "Delivered"];
+  const stageNames = ["Order placed", "At SG Yishun hub", "At ID Batam warehouse", "Local last mile", "Delivered"];
 
   root.innerHTML = `
     <div class="card track-result">
@@ -817,3 +841,51 @@ function renderSearch() {
 
 // ─── Bind everything on DOMContentLoaded ───────────────────────────────────
 document.addEventListener("DOMContentLoaded", updateCartBadge);
+
+// ─── PDP Image Gallery (scrollable carousel) ──────────────────────────────
+function initPdpGallery() {
+  const gallery = document.querySelector("[data-gallery]");
+  if (!gallery) return;
+  const track = gallery.querySelector("[data-gallery-track]");
+  const slides = gallery.querySelectorAll(".pdp-gallery-slide");
+  const prevBtn = gallery.querySelector("[data-gallery-prev]");
+  const nextBtn = gallery.querySelector("[data-gallery-next]");
+  const dots = gallery.querySelectorAll("[data-gallery-dot]");
+
+  if (!track || slides.length === 0) return;
+
+  let activeIdx = 0;
+
+  function update(idx) {
+    activeIdx = Math.max(0, Math.min(slides.length - 1, idx));
+    const slide = slides[activeIdx];
+    if (slide) {
+      track.scrollTo({ left: slide.offsetLeft, behavior: "smooth" });
+    }
+    dots.forEach((d, i) => d.classList.toggle("active", i === activeIdx));
+  }
+
+  prevBtn?.addEventListener("click", () => update(activeIdx - 1));
+  nextBtn?.addEventListener("click", () => update(activeIdx + 1));
+  dots.forEach((d, i) => d.addEventListener("click", () => update(i)));
+
+  // Track scroll to update active dot
+  let scrollTimeout;
+  track.addEventListener("scroll", () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const scrollLeft = track.scrollLeft;
+      let closest = 0;
+      let minDist = Infinity;
+      slides.forEach((s, i) => {
+        const dist = Math.abs(s.offsetLeft - scrollLeft);
+        if (dist < minDist) { minDist = dist; closest = i; }
+      });
+      if (closest !== activeIdx) {
+        activeIdx = closest;
+        dots.forEach((d, i) => d.classList.toggle("active", i === activeIdx));
+      }
+    }, 80);
+  }, { passive: true });
+}
+document.addEventListener("DOMContentLoaded", initPdpGallery);

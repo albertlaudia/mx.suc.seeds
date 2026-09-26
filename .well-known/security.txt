@@ -1,0 +1,8 @@
+# security.txt — https://securitytxt.org/
+# When security researchers find a vulnerability, this is where they should report it.
+
+Contact: mailto:security@seeds.scaleupcrm.com
+Contact: https://wa.me/6580000000
+Expires: 2027-12-31T23:59:59z
+Preferred-Languages: en
+Canonical: https://seeds.scaleupcrm.com/.well-known/security.txt

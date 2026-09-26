@@ -1,0 +1,73 @@
+{
+  "name": "Sindo Wellness & K-Beauty",
+  "short_name": "Sindo",
+  "description": "Authentic supplements and Korean beauty, shipped from Singapore via Sindo Shipping.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fffbfc",
+  "theme_color": "#c4476a",
+  "lang": "en-SG",
+  "categories": ["health", "lifestyle", "shopping"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-home.png",
+      "type": "image/png",
+      "sizes": "1280x800",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "type": "image/png",
+      "sizes": "390x844",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Track Order",
+      "short_name": "Track",
+      "url": "/track.html",
+      "icons": [{"src": "/icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Browse Catalog",
+      "short_name": "Shop",
+      "url": "/categories.html",
+      "icons": [{"src": "/icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "K-Beauty",
+      "short_name": "Beauty",
+      "url": "/v2.html",
+      "icons": [{"src": "/icon-192.png", "sizes": "192x192"}]
+    }
+  ]
+}

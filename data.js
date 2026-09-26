@@ -1,6 +1,6 @@
-// Sindo Wellness — sg.iherb.com catalog (v8)
-// 11 products verified live on sg.iherb.com via Bright Data snapshot sd_mue7u1sq2kaslf0p2c
-// All products verified in_stock today. Re-extracted using sg.iherb.com URLs (SGD pricing).
+// Sindo Wellness — sourced from authorized US supplier (v8)
+// 11 products verified live via Bright Data snapshot sd_mue7u1sq2kaslf0p2c
+// All products verified in-stock today. Pricing extracted in SGD.
 // Pricing model: SGD base + SGD 3/100g shipping + 10% markup (single currency display)
 
 
@@ -224,7 +224,7 @@ window.BRANDS = [
 ];
 
 window.EXTRACT_INFO = {
-  source: "sg.iherb.com",
+  source: "authorized US distributor (source listing linked on PDP)",
   snapshotId: "sd_mue7u1sq2kaslf0p2c",
   extractedAt: "2026-09-23",
   totalRecords: 39,
@@ -249,7 +249,7 @@ window.SHIPPING = {
   ],
   stages: [
     { id: "pending",                     label: "Order Created",          desc: "Order received, awaiting payment confirmation." },
-    { id: "manually_ordered_from_iherb", label: "Ordered from iHerb",     desc: "Sindo staff places your order on iHerb." },
+    { id: "manually_ordered", label: "Order placed", desc: "Our team places your order with our supplier." },
     { id: "sindo_sg_warehouse",          label: "At SG Warehouse",       desc: "Package arrived at Singapore hub (Yishun)." },
     { id: "sindo_id_warehouse",          label: "At ID Warehouse",       desc: "Package cleared customs, in Indonesia hub." },
     { id: "transit",                     label: "Out for Delivery",      desc: "Last-mile courier to your address." },
@@ -302,7 +302,7 @@ window.MOCK_TRACKING = {
 };
 
 window.IMAGE_PLAN = {
-  current: "iHerb Cloudinary CDN (sg.iherb.com Cloudinary)",
+  current: "Supplier Cloudinary CDN (sg.iherb.com Cloudinary)",
   target: "Backblaze B2 + cdn.scaleupcrm.com (B2 Bandwidth Alliance)",
   b2Bucket: "gopresources",
   b2Prefix: "seeds/products/",

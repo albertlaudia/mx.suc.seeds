@@ -1,0 +1,52 @@
+# robots.txt — Sindo Wellness + K-Beauty
+# https://seeds.scaleupcrm.com
+
+User-agent: *
+Allow: /
+Disallow: /cart.html
+Disallow: /checkout.html
+Disallow: /order.html
+Disallow: /track.html
+Disallow: /dashboard.html
+
+# Explicit allow for product URLs (SEO priority)
+Allow: /product.html
+Allow: /categories.html
+
+# Crawl-delay: respect our infrastructure
+Crawl-delay: 1
+
+# Sitemap
+Sitemap: https://seeds.scaleupcrm.com/sitemap.xml
+
+# Major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Block common bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

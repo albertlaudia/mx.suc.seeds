@@ -250,7 +250,7 @@ window.KBEAUTY = {
   },
   shipping: { ratePer100gSgd: 3, markupPct: 10 },
 
-  // iHerb-style legal disclaimers — rendered into footer of every kbeauty page.
+  // Review disclaimers — rendered into footer of every kbeauty page.
   // Keep wording identical across all kbeauty pages so legal review only needs one source.
   legal: {
     reviewDisclaimer: 'Product reviews reflect the views and opinions expressed by individual contributors and not those of Sindo K-Beauty. Sindo K-Beauty does not verify or endorse any claims made in these reviews. Customer ratings and review counts are aggregated from publicly available sources; individual results may vary.',
