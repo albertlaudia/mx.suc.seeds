@@ -321,6 +321,7 @@ function renderCart() {
   if (items.length === 0) {
     root.innerHTML = `
       <div class="container empty-cart">
+        <h1>Your cart</h1>
         <h2>Your cart is empty</h2>
         <p>Browse our catalog and add products to start an order.</p>
         <p><a class="btn-primary" href="index.html">Browse products →</a></p>
@@ -398,6 +399,7 @@ function renderCheckout() {
   if (items.length === 0) {
     root.innerHTML = `
       <div class="container empty-cart">
+        <h1>Checkout</h1>
         <h2>Your cart is empty</h2>
         <p><a class="btn-primary" href="index.html">Browse products →</a></p>
       </div>`;
