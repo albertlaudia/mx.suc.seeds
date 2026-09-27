@@ -196,7 +196,9 @@ function renderProduct() {
       </div>`;
     return;
   }
-  document.title = `${p.title} · Sindo Wellness`;
+  // Truncate long product names in title to keep <65 chars for SEO
+  const fullTitle = `${p.title} · Sindo Wellness`;
+  document.title = fullTitle.length > 60 ? fullTitle.slice(0, 57) + "..." : fullTitle;
   const canonical = document.querySelector("link[rel=canonical]");
   if (canonical) canonical.href = `https://seeds.scaleupcrm.com/product.html?id=${p.id}`;
 
