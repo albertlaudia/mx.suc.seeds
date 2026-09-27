@@ -649,8 +649,8 @@ function renderTrack() {
         <p class="muted">Demo tracking numbers:</p>
         <ul class="muted" style="line-height: 1.8;">
           <li><code>SS-202609-DEMO1</code> — Delivered</li>
-          <li><code>SS-202609-DEMO2</code> — In transit (last mile)</li>
-          <li><code>SS-202609-DEMO3</code> — At ID warehouse</li>
+          <li><code>SS-202609-DEMO2</code> — Out for delivery</li>
+          <li><code>SS-202609-DEMO3</code> — Indonesia Customs (Batam)</li>
           <li>Any other number — deterministic hash fallback to one of 6 stages</li>
         </ul>
       </div>
@@ -680,7 +680,7 @@ function renderTrackResult(trackingNumber) {
     stageIdx = Math.abs(h) % SHIPPING.stages.length;
   }
   const stage = SHIPPING.stages[stageIdx];
-  const stageNames = ["Order placed", "At SG Yishun hub", "At ID Batam warehouse", "Local last mile", "Delivered"];
+  const stageNames = ["Order placed", "Singapore warehouse", "Indonesia Customs", "Out for delivery", "Delivered"];
 
   root.innerHTML = `
     <div class="card track-result">

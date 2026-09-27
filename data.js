@@ -244,16 +244,15 @@ window.SHIPPING = {
       id: "sindo-shipping",
       courier: "Sindo Shipping",
       etaDays: "5-10 business days",
-      note: "Consolidated from Singapore warehouse (Yishun) → Batam → your address. Customs duties included."
+      note: "Consolidated from Singapore warehouse → Indonesia Customs → your address. Customs duties included."
     }
   ],
   stages: [
-    { id: "pending",                     label: "Order Created",          desc: "Order received, awaiting payment confirmation." },
-    { id: "manually_ordered", label: "Order placed", desc: "Our team places your order with our supplier." },
-    { id: "sindo_sg_warehouse",          label: "At SG Warehouse",       desc: "Package arrived at Singapore hub (Yishun)." },
-    { id: "sindo_id_warehouse",          label: "At ID Warehouse",       desc: "Package cleared customs, in Indonesia hub." },
-    { id: "transit",                     label: "Out for Delivery",      desc: "Last-mile courier to your address." },
-    { id: "delivered",                   label: "Delivered",             desc: "Package received by customer." }
+    { id: "pending",              label: "Order placed",          desc: "Order received, payment confirmed, awaiting supplier dispatch." },
+    { id: "sindo_sg_warehouse",   label: "Singapore warehouse",   desc: "Package arrived at our Singapore consolidation hub (Yishun)." },
+    { id: "sindo_id_warehouse",   label: "Indonesia Customs",     desc: "Package cleared Indonesian customs, at our Batam warehouse." },
+    { id: "transit",              label: "Out for delivery",      desc: "Last-mile courier dispatched to your address." },
+    { id: "delivered",            label: "Delivered",             desc: "Package received by customer." }
   ]
 };
 
