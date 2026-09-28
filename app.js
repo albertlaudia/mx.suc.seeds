@@ -671,25 +671,33 @@ function renderTrackResult(trackingNumber) {
   const root = document.getElementById("track-result");
   if (!root) return;
 
-  let stageIdx = MOCK_TRACKING[trackingNumber];
-  if (stageIdx === undefined) {
+  // Resolve tracking number → stage id → stage object → index
+  let stageId;
+  const demoMatch = MOCK_TRACKING?.demos?.[trackingNumber];
+  if (demoMatch) {
+    stageId = demoMatch.stage;
+  } else {
+    // Hash-based fallback for arbitrary tracking numbers
     let h = 0;
     for (let i = 0; i < trackingNumber.length; i++) {
       h = ((h << 5) - h + trackingNumber.charCodeAt(i)) | 0;
     }
-    stageIdx = Math.abs(h) % SHIPPING.stages.length;
+    stageId = SHIPPING.stages[Math.abs(h) % SHIPPING.stages.length].id;
   }
-  const stage = SHIPPING.stages[stageIdx];
+
+  const stageIdx = SHIPPING.stages.findIndex(s => s.id === stageId);
+  const stage = SHIPPING.stages[stageIdx >= 0 ? stageIdx : 0];
   const stageNames = ["Order placed", "Singapore warehouse", "Indonesia Customs", "Out for delivery", "Delivered"];
 
   root.innerHTML = `
     <div class="card track-result">
       <div class="track-number">
         <strong>Tracking:</strong> <span class="mono">${escapeHtml(trackingNumber)}</span>
+        ${demoMatch ? `<span class="muted" style="font-size:12px;margin-left:8px;">via ${escapeHtml(demoMatch.courier || "Sindo Shipping")}</span>` : ""}
       </div>
       <div class="track-stage">
-        <div class="stage-name">Current stage: <strong>${escapeHtml(stage.name)}</strong></div>
-        <div class="stage-time muted">${escapeHtml(stage.note || "—")}</div>
+        <div class="stage-name">Current stage: <strong>${escapeHtml(stage.label || stage.id)}</strong></div>
+        <div class="stage-time muted">${escapeHtml(stage.desc || "—")}</div>
       </div>
       <div class="track-bar">
         ${stageNames.map((name, i) => `
