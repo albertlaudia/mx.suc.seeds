@@ -49,7 +49,8 @@
   const products = window.PRODUCTS || [];
   const productSales = {};
   allOrders.forEach(o => {
-    o.items?.forEach(i => {
+    const items = Array.isArray(o.items) ? o.items : [];
+    items.forEach(i => {
       productSales[i.id] = (productSales[i.id] || 0) + (i.qty || 1);
     });
   });
@@ -81,7 +82,7 @@
       <tr>
         <td><span class="mono">${o.ref}</span></td>
         <td>${escape(o.customer)}<br><span class="muted" style="font-size:11px;">${o.city}, ${o.country}</span></td>
-        <td>${o.items} item${o.items !== 1 ? 's' : ''}</td>
+        <td>${(Array.isArray(o.items) ? o.items.length : (o.items || 0))} item${(Array.isArray(o.items) ? o.items.length : (o.items || 0)) !== 1 ? 's' : ''}</td>
         <td class="num">S$${o.totalSgd.toFixed(2)}</td>
         <td><span class="adm-status ${stageBadge}">${o.status}</span></td>
         <td>${new Date(o.createdAt).toLocaleDateString('en-SG', { month: 'short', day: 'numeric' })}</td>
