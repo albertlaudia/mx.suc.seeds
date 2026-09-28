@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform · Katalog.id Console</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3EK%3C/text%3C/svg%3E">
+<link rel="manifest" href="../manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="../design-system.css?v=v2.3">
+<link rel="stylesheet" href="../admin.css?v=v2.3">
+</head>
+<body data-page-title="Platform overview" data-page-subtitle="Multi-tenant analytics, tenant health, and platform-wide billing." data-console="true" data-page-actions='<a href="billing.html" class="btn btn-primary">View billing →</a>'>
+<div id="admin-root"></div>
+
+<script src="../admin-shell.js?v=v2.3"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const TENANTS = [
+  { id: 'sindo', name: 'Sindo Wellness', domain: 'seeds.scaleupcrm.com', tier: 'growth', status: 'active', mrr: 89, gmv30d: 1247, products: 11, orders: 4, createdAt: '2026-09-15' },
+  { id: 'kbeauty', name: 'K-beauty (Sindo demo 2)', domain: 'seeds.scaleupcrm.com/kbeauty', tier: 'starter', status: 'trial', mrr: 0, gmv30d: 0, products: 12, orders: 0, createdAt: '2026-09-26' },
+  { id: 'katalog-prod', name: 'Katalog.id (main)', domain: 'seedcart.scaleupcrm.com', tier: 'enterprise', status: 'provisioning', mrr: 0, gmv30d: 0, products: 0, orders: 0, createdAt: '2026-09-28' }
+];
+
+function render() {
+  const totalMRR = TENANTS.reduce((s, t) => s + t.mrr, 0);
+  const totalGMV = TENANTS.reduce((s, t) => s + t.gmv30d, 0);
+  const activeTenants = TENANTS.filter(t => t.status === 'active').length;
+
+  document.getElementById('admin-content').innerHTML = `
+    <div class="admin-grid-stats">
+      <div class="admin-stat"><div class="label">Tenants</div><div class="num">${TENANTS.length}</div><div class="delta up">${activeTenants} active</div></div>
+      <div class="admin-stat"><div class="label">MRR</div><div class="num">S$${totalMRR}</div><div class="delta up">↗ +12% MoM</div></div>
+      <div class="admin-stat"><div class="label">GMV (30d)</div><div class="num">S$${totalGMV.toFixed(0)}</div><div class="delta up">↗ +34% MoM</div></div>
+      <div class="admin-stat"><div class="label">Total products</div><div class="num">${TENANTS.reduce((s, t) => s + t.products, 0)}</div><div class="delta">Across all tenants</div></div>
+      <div class="admin-stat"><div class="label">Orders (30d)</div><div class="num">${TENANTS.reduce((s, t) => s + t.orders, 0)}</div><div class="delta">All tenants</div></div>
+      <div class="admin-stat"><div class="label">Platform uptime</div><div class="num">99.97%</div><div class="delta up">↗ Stable</div></div>
+    </div>
+
+    <div class="admin-grid-2">
+      <div class="adm-card">
+        <div class="adm-card-head">
+          <div>
+            <h3>Tenants</h3>
+            <div class="sub">All shops on the platform</div>
+          </div>
+          <button class="btn btn-ghost btn-sm">+ New tenant</button>
+        </div>
+        <div class="adm-card-body tight">
+          <table class="adm-table">
+            <thead><tr><th>Tenant</th><th>Domain</th><th>Tier</th><th>Status</th><th>MRR</th><th>GMV 30d</th><th>Catalog</th></tr></thead>
+            <tbody>
+              ${TENANTS.map(t => `
+                <tr>
+                  <td><strong>${escape(t.name)}</strong><br><span class="muted" style="font-size:11px;font-family:monospace;">${escape(t.id)}</span></td>
+                  <td><span class="mono" style="font-size:12px;">${escape(t.domain)}</span></td>
+                  <td><span class="adm-status">${escape(t.tier)}</span></td>
+                  <td><span class="adm-status ${t.status === 'active' ? 'paid' : t.status === 'trial' ? 'shipped' : 'pending'}">${escape(t.status)}</span></td>
+                  <td class="num">S$${t.mrr}</td>
+                  <td class="num">S$${t.gmv30d}</td>
+                  <td>${t.products} items · ${t.orders} orders</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="adm-card">
+        <div class="adm-card-head"><h3>GMV by tenant (30 days)</h3></div>
+        <div class="adm-card-body">
+          ${TENANTS.map(t => {
+            const pct = (t.gmv30d / totalGMV * 100) || 0;
+            return `
+              <div style="margin-bottom:18px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;">
+                  <span style="font-weight:600;">${escape(t.name)}</span>
+                  <span class="mono">S$${t.gmv30d.toFixed(0)}</span>
+                </div>
+                <div style="height:8px;background:var(--c-surface-2);border-radius:4px;overflow:hidden;">
+                  <div style="height:100%;background:linear-gradient(90deg,var(--c-brand),var(--c-brand-hover));width:${pct}%;"></div>
+                </div>
+                <div class="muted" style="font-size:11px;margin-top:2px;">${pct.toFixed(1)}% of total</div>
+              </div>
+            `;
+          }).join('')}
+          ${totalGMV === 0 ? '<p class="muted">No GMV yet. First paying tenant order will appear here.</p>' : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-grid-3 admin-mt-6">
+      <div class="adm-card">
+        <div class="adm-card-head"><h3>Plan tier distribution</h3></div>
+        <div class="adm-card-body">
+          ${['starter', 'growth', 'enterprise'].map(tier => {
+            const n = TENANTS.filter(t => t.tier === tier).length;
+            return `
+              <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--c-border);">
+                <span style="text-transform:capitalize;">${tier}</span>
+                <span class="mono">${n} ${n === 1 ? 'tenant' : 'tenants'}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      <div class="adm-card">
+        <div class="adm-card-head"><h3>System health</h3></div>
+        <div class="adm-card-body">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--c-border);font-size:13px;">
+            <span>API uptime</span><span class="mono" style="color:var(--c-success);">99.97%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--c-border);font-size:13px;">
+            <span>Webhook delivery</span><span class="mono" style="color:var(--c-success);">100% (24h)</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--c-border);font-size:13px;">
+            <span>CDN cache hit</span><span class="mono">94.2%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--c-border);font-size:13px;">
+            <span>Search latency p95</span><span class="mono">87ms</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;">
+            <span>Stripe webhook lag</span><span class="mono">312ms</span>
+          </div>
+        </div>
+      </div>
+      <div class="adm-card">
+        <div class="adm-card-head"><h3>Quick links</h3></div>
+        <div class="adm-card-body" style="display:flex;flex-direction:column;gap:8px;">
+          <a href="billing.html" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">💳 Billing &amp; plans</a>
+          <a href="tenants.html" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">🏪 All tenants</a>
+          <a href="audit.html" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">🔒 Audit log</a>
+          <a href="settings.html" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">⚙️ Platform settings</a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>

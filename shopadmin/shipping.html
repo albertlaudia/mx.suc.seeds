@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shipping · Sindo Wellness Shop Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3ES%3C/text%3C/svg%3E">
+<link rel="manifest" href="../manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../design-system.css?v=v2.3">
+<link rel="stylesheet" href="../admin.css?v=v2.3">
+</head>
+<body data-page-title="Shipping" data-page-subtitle="Configure Sindo Shipping rates, pickup locations, and delivery zones.">
+<div id="admin-root"></div>
+
+<script src="../admin-shell.js?v=v2.3"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const STORAGE_KEY = 'sindo_shipping_v1';
+const SEED = {
+  ratePer100gSgd: 3,
+  markupPct: 10,
+  customsDutyIncludedKg: 1.5,
+  freeShippingThresholdSgd: 80,
+  zones: [
+    { id: 'SG', name: 'Singapore', eta: '2-3 days', enabled: true },
+    { id: 'ID', name: 'Indonesia', eta: '4-6 days', enabled: true },
+    { id: 'MY', name: 'Malaysia', eta: '4-6 days', enabled: true },
+    { id: 'BN', name: 'Brunei', eta: '5-7 days', enabled: true },
+    { id: 'TH', name: 'Thailand', eta: '5-7 days', enabled: true },
+    { id: 'OTHER', name: 'Worldwide', eta: '7-15 days', enabled: true }
+  ],
+  pickup: { warehouse: 'Yishun Industrial Park A', batamHub: 'Batam Centre, Indonesia', etaPickupToSG: '3-5 days from supplier US warehouse' },
+  trackingStages: [
+    { id: 'manually_ordered', label: 'Order placed', desc: 'Our team places your order with our supplier.' },
+    { id: 'sindo_sg_warehouse', label: 'Singapore warehouse', desc: 'Package arrived at our Singapore consolidation hub (Yishun).' },
+    { id: 'sindo_id_warehouse', label: 'Indonesia Customs', desc: 'Package cleared Indonesian customs, at our Batam warehouse.' },
+    { id: 'transit', label: 'Out for delivery', desc: 'Last-mile courier dispatched to your address.' },
+    { id: 'delivered', label: 'Delivered', desc: 'Package received by customer.' }
+  ]
+};
+
+function load() {
+  let s = SEED;
+  try { s = { ...SEED, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }; } catch {}
+  return s;
+}
+
+function save(s) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+}
+
+function render() {
+  const s = load();
+  document.getElementById('admin-content').innerHTML = `
+    <div class="admin-grid-stats">
+      <div class="admin-stat"><div class="label">Rate per 100g</div><div class="num">S$${s.ratePer100gSgd}</div></div>
+      <div class="admin-stat"><div class="label">Markup %</div><div class="num">${s.markupPct}%</div></div>
+      <div class="admin-stat"><div class="label">Customs included</div><div class="num">${s.customsDutyIncludedKg} kg</div></div>
+      <div class="admin-stat"><div class="label">Free ship over</div><div class="num">S$${s.freeShippingThresholdSgd}</div></div>
+    </div>
+
+    <div class="admin-grid-2">
+      <!-- Pricing -->
+      <div class="adm-card">
+        <div class="adm-card-head"><h3>Shipping pricing</h3></div>
+        <div class="adm-card-body">
+          <div class="adm-form-row">
+            <div class="adm-field">
+              <label>Rate per 100g (SGD)</label>
+              <input type="number" step="0.1" class="input" id="rate" value="${s.ratePer100gSgd}">
+            </div>
+            <div class="adm-field">
+              <label>Platform markup %</label>
+              <input type="number" class="input" id="markup" value="${s.markupPct}">
+            </div>
+          </div>
+          <div class="adm-form-row">
+            <div class="adm-field">
+              <label>Customs duties included up to (kg)</label>
+              <input type="number" step="0.1" class="input" id="customs" value="${s.customsDutyIncludedKg}">
+              <div class="hint">Above this, customer is contacted for separate quote.</div>
+            </div>
+            <div class="adm-field">
+              <label>Free shipping over (SGD)</label>
+              <input type="number" class="input" id="free-threshold" value="${s.freeShippingThresholdSgd}">
+              <div class="hint">0 = no free shipping tier</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pickup -->
+      <div class="adm-card">
+        <div class="adm-card-head"><h3>Pickup warehouses</h3></div>
+        <div class="adm-card-body">
+          <div class="adm-field">
+            <label>SG warehouse</label>
+            <input class="input" id="sg-warehouse" value="${escape(s.pickup.warehouse)}">
+          </div>
+          <div class="adm-field">
+            <label>ID hub</label>
+            <input class="input" id="id-hub" value="${escape(s.pickup.batamHub)}">
+          </div>
+          <div class="adm-field">
+            <label>SG pickup ETA from supplier</label>
+            <input class="input" id="sg-eta" value="${escape(s.pickup.etaPickupToSG)}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery zones -->
+    <div class="adm-card admin-mt-4">
+      <div class="adm-card-head"><h3>Delivery zones</h3><div class="muted" style="font-size:12px;">Toggle countries you ship to</div></div>
+      <div class="adm-card-body tight">
+        <table class="adm-table">
+          <thead><tr><th>Zone ID</th><th>Display name</th><th>ETA</th><th>Enabled</th></tr></thead>
+          <tbody>
+            ${s.zones.map((z, i) => `
+              <tr>
+                <td><span class="mono">${z.id}</span></td>
+                <td><input class="input" id="zone-name-${i}" value="${escape(z.name)}" style="height:32px;"></td>
+                <td><input class="input" id="zone-eta-${i}" value="${escape(z.eta)}" style="height:32px;width:160px;"></td>
+                <td><input type="checkbox" data-zone-toggle="${i}" ${z.enabled ? 'checked' : ''} style="width:18px;height:18px;"></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tracking stages -->
+    <div class="adm-card admin-mt-4">
+      <div class="adm-card-head"><h3>Tracking stages</h3><div class="muted" style="font-size:12px;">Edit stage names + descriptions shown to customers</div></div>
+      <div class="adm-card-body">
+        ${s.trackingStages.map((t, i) => `
+          <div style="display:grid;grid-template-columns:1fr 1fr 110px;gap:12px;margin-bottom:10px;align-items:center;">
+            <input class="input mono" id="stage-id-${i}" value="${escape(t.id)}" readonly style="font-size:12px;">
+            <input class="input" id="stage-label-${i}" value="${escape(t.label)}" placeholder="Label">
+            <button class="btn btn-ghost btn-sm" onclick="alert('Edit description in payload: ${escape(t.id)}')">Edit desc</button>
+          </div>
+        `).join('')}
+        <div class="muted" style="font-size:12px;margin-top:8px;">Descriptions are loaded from <code>data.js</code>. Stage IDs must match the data layer.</div>
+      </div>
+    </div>
+
+    <div class="row mt-6" style="gap:8px;">
+      <button class="btn btn-primary" onclick="saveAll()">Save shipping settings</button>
+      <button class="btn btn-ghost" onclick="load(); render();">Discard</button>
+    </div>
+  `;
+}
+
+window.saveAll = function() {
+  const s = load();
+  s.ratePer100gSgd = Number(document.getElementById('rate').value);
+  s.markupPct = Number(document.getElementById('markup').value);
+  s.customsDutyIncludedKg = Number(document.getElementById('customs').value);
+  s.freeShippingThresholdSgd = Number(document.getElementById('free-threshold').value);
+  s.pickup.warehouse = document.getElementById('sg-warehouse').value;
+  s.pickup.batamHub = document.getElementById('id-hub').value;
+  s.pickup.etaPickupToSG = document.getElementById('sg-eta').value;
+  s.zones.forEach((z, i) => {
+    z.name = document.getElementById('zone-name-' + i).value;
+    z.eta = document.getElementById('zone-eta-' + i).value;
+  });
+  document.querySelectorAll('[data-zone-toggle]').forEach(input => {
+    s.zones[Number(input.dataset.zoneToggle)].enabled = input.checked;
+  });
+  s.trackingStages.forEach((t, i) => {
+    t.label = document.getElementById('stage-label-' + i).value;
+  });
+  save(s);
+  sindoToast('Shipping settings saved');
+};
+
+render();
+</script>
+</body>
+</html>

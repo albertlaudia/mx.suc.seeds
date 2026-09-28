@@ -526,7 +526,7 @@ document.getElementById('featured').innerHTML = featured.map(p => `
     </div>
     <div class="product-card-actions">
       <button class="btn btn-primary btn-sm flex-1">Add to cart</button>
-      <button class="btn btn-ghost btn-icon" aria-label="Save">♡</button>
+      <button class="btn btn-ghost btn-icon wishlist-heart" data-wishlist-product="${p.id}" aria-label="Save to wishlist" aria-pressed="false">♡</button>
     </div>
   </article>
 `).join('');

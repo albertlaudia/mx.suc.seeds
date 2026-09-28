@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing · Katalog.id Console</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3EK%3C/text%3C/svg%3E">
+<link rel="manifest" href="../manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="../design-system.css?v=v2.3">
+<link rel="stylesheet" href="../admin.css?v=v2.3">
+</head>
+<body data-page-title="Billing &amp; subscription tiers" data-page-subtitle="Configure monthly plans, take rates, and overage limits." data-console="true">
+<div id="admin-root"></div>
+
+<script src="../admin-shell.js?v=v2.3"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const PLANS = [
+  { id: 'starter', name: 'Starter', mrr: 29, takeRatePct: 5, includedProducts: 25, includedOrders: 50, overageProductSgd: 0.50, overageOrderSgd: 0.10, features: ['Single tenant', '1 catalog source', 'Manual payments', 'Email support'], popular: false },
+  { id: 'growth', name: 'Growth', mrr: 89, takeRatePct: 3, includedProducts: 200, includedOrders: 1000, overageProductSgd: 0.30, overageOrderSgd: 0.05, features: ['Single tenant', '3 catalog sources', 'Manual + Stripe', 'Priority support', 'Custom domain'], popular: true },
+  { id: 'enterprise', name: 'Enterprise', mrr: 499, takeRatePct: 1.5, includedProducts: 9999, includedOrders: 99999, overageProductSgd: 0, overageOrderSgd: 0, features: ['Multi-tenant', 'Unlimited sources', 'Manual + Stripe Connect', '24/7 support', 'SSO + audit log', 'Dedicated infra'], popular: false }
+];
+
+function render() {
+  const cardsHtml = PLANS.map(p => `
+    <div class="adm-card" style="${p.popular ? 'border-color:var(--c-brand);box-shadow:var(--sh-glow);' : ''}">
+      <div class="adm-card-body" style="text-align:center;">
+        <div style="text-transform:uppercase;font-size:11px;letter-spacing:2px;color:var(--c-text-muted);font-weight:600;">${p.name}</div>
+        <div style="font-size:48px;font-weight:700;margin:8px 0;font-family:var(--ff-serif);">
+          <span style="color:var(--c-brand);">S$${p.mrr}</span><span style="font-size:18px;color:var(--c-text-muted);font-weight:500;">/mo</span>
+        </div>
+        <div class="muted" style="font-size:12px;margin-bottom:24px;">+ ${p.takeRatePct}% transaction fee</div>
+        <ul style="list-style:none;padding:0;margin:0 0 24px 0;text-align:left;font-size:13px;">
+          <li style="padding:6px 0;">📦 Up to <strong>${p.includedProducts.toLocaleString()}</strong> products</li>
+          <li style="padding:6px 0;">📑 Up to <strong>${p.includedOrders.toLocaleString()}</strong> orders/mo</li>
+          ${p.features.map(f => `<li style="padding:6px 0;">✓ ${escape(f)}</li>`).join('')}
+          ${p.overageProductSgd > 0 ? `<li style="padding:6px 0;font-size:11px;color:var(--c-text-muted);">Overages: S$${p.overageProductSgd}/extra product, S$${p.overageOrderSgd}/extra order</li>` : ''}
+        </ul>
+        <button class="btn ${p.popular ? 'btn-primary' : 'btn-secondary'}" style="width:100%;">Choose ${p.name}</button>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('admin-content').innerHTML = `
+    <div class="admin-grid-3">
+      ${cardsHtml}
+    </div>
+
+    <div class="adm-card admin-mt-6">
+      <div class="adm-card-head">
+        <div>
+          <h3>Platform revenue (30 days)</h3>
+          <div class="sub">Subscription + transaction fees</div>
+        </div>
+      </div>
+      <div class="adm-card-body">
+        <div class="admin-grid-stats" style="margin:0;">
+          <div class="admin-stat"><div class="label">MRR</div><div class="num">S$89</div><div class="delta up">Sindo · Growth tier</div></div>
+          <div class="admin-stat"><div class="label">Take rate revenue</div><div class="num">S$37.41</div><div class="delta up">3% of S$1,247 GMV</div></div>
+          <div class="admin-stat"><div class="label">Stripe fees paid</div><div class="num" style="color:var(--c-error);">-S$8.12</div><div class="delta">Card processing</div></div>
+          <div class="admin-stat"><div class="label">Net</div><div class="num" style="color:var(--c-success);">S$118.29</div><div class="delta up">↗ Stable</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="adm-card admin-mt-6">
+      <div class="adm-card-head">
+        <h3>Recent invoices</h3>
+      </div>
+      <div class="adm-card-body tight">
+        <table class="adm-table">
+          <thead><tr><th>Date</th><th>Tenant</th><th>Plan</th><th>Type</th><th class="num">Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>2026-09-22</td><td>Sindo Wellness</td><td>Growth</td><td>Subscription</td><td class="num">S$89.00</td><td><span class="adm-status paid">Paid</span></td></tr>
+            <tr><td>2026-09-26</td><td>K-beauty (trial)</td><td>Starter</td><td>Trial</td><td class="num">S$0.00</td><td><span class="adm-status">Trialing</span></td></tr>
+            <tr><td>2026-09-23</td><td>Sindo Wellness</td><td>Growth</td><td>Take rate (8 orders)</td><td class="num">S$15.84</td><td><span class="adm-status paid">Paid</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="adm-card admin-mt-6" style="border-color:var(--c-info);">
+      <div class="adm-card-body" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="font-size:24px;">💡</div>
+        <div>
+          <div style="font-weight:600;">Pricing model</div>
+          <div class="muted" style="font-size:13px;line-height:1.6;">
+            Subscriptions cover platform access + infra cost. Transaction fees cover payment processing + tenant fulfillment.
+            <br>Plan changes take effect on the next billing cycle. Tier downgrades lose access to features immediately.
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>

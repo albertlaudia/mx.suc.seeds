@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orders · Sindo Wellness Shop Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3ES%3C/text%3C/svg%3E">
+<link rel="manifest" href="../manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="../design-system.css?v=v2.3">
+<link rel="stylesheet" href="../admin.css?v=v2.3">
+</head>
+<body data-page-title="Orders" data-page-subtitle="Manage and track every order from placement to delivery.">
+<div id="admin-root"></div>
+
+<script src="../admin-shell.js?v=v2.3"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+const STORAGE_KEY = 'sindo_admin_orders_v1';
+const SEED = [
+  { ref: 'SINDO-2H4K9X', tracking: 'SS-202609-LRX6N', customer: 'Aria Setiawan', email: 'aria@example.com', phone: '+6591234567', city: 'Singapore', country: 'SG', items: [{id:'now-mag-glyc-180',qty:2}], totalSgd: 87.45, createdAt: '2026-09-22T08:15:00Z', status: 'shipped', stage: 'transit' },
+  { ref: 'SINDO-9P3M2Z', tracking: null, customer: 'Jason Lee', email: 'j.lee@example.com', phone: '+62812345678', city: 'Jakarta', country: 'ID', items: [{id:'cgn-prenatal',qty:1}], totalSgd: 47.94, createdAt: '2026-09-23T11:42:00Z', status: 'paid', stage: 'manually_ordered' },
+  { ref: 'SINDO-1Y7D6A', tracking: 'SS-202609-NCP7K', customer: 'Maya Wong', email: 'maya@example.com', phone: '+60123456789', city: 'Kuala Lumpur', country: 'MY', items: [{id:'cgn-bone-boost',qty:3}], totalSgd: 144.27, createdAt: '2026-09-23T16:20:00Z', status: 'delivered', stage: 'delivered' },
+  { ref: 'SINDO-5T2Q8B', tracking: null, customer: 'Test Buyer', email: 'test@example.com', phone: '+6591234567', city: 'Singapore', country: 'SG', items: [{id:'now-mag-glyc-180',qty:1}], totalSgd: 43.87, createdAt: '2026-09-24T03:42:00Z', status: 'paid', stage: 'sindo_sg_warehouse' }
+];
+
+let allOrders = [...JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'), ...SEED];
+
+function render() {
+  const counts = { pending: 0, paid: 0, shipped: 0, delivered: 0, cancelled: 0 };
+  allOrders.forEach(o => counts[o.status] !== undefined && counts[o.status]++);
+
+  const rows = allOrders.slice().reverse().map(o => {
+    const stageBadge = { paid: 'pending', shipped: 'shipped', delivered: 'delivered', cancelled: 'cancelled' }[o.status] || 'pending';
+    const stageLabel = { paid: 'Paid', shipped: 'In transit', delivered: 'Delivered', pending: 'Pending', cancelled: 'Cancelled' }[o.status] || o.status;
+    return `
+      <tr data-order="${o.ref}" id="${o.ref}">
+        <td><span class="mono">${escape(o.ref)}</span><br><span class="muted" style="font-size:11px;">${new Date(o.createdAt).toLocaleString('en-SG', { dateStyle: 'medium', timeStyle: 'short' })}</span></td>
+        <td>${escape(o.customer)}<br><span class="muted" style="font-size:11px;">${escape(o.email)}</span></td>
+        <td>${escape(o.city)}, ${escape(o.country)}</td>
+        <td>${o.items?.length || o.items} item${o.items === 1 ? '' : 's'}</td>
+        <td class="num">S$${o.totalSgd.toFixed(2)}</td>
+        <td><span class="adm-status ${stageBadge}">${stageLabel}</span></td>
+        <td><span class="mono" style="font-size:11px;">${o.tracking || '—'}</span></td>
+        <td class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="toggleOrderDetail('${o.ref}')">Details</button>
+          <select onchange="updateStatus('${o.ref}', this.value)" style="height:32px;border-radius:6px;border:1px solid var(--c-border);font-size:13px;">
+            <option value="" disabled selected>Set…</option>
+            <option value="paid">Mark Paid</option>
+            <option value="shipped">Mark Shipped</option>
+            <option value="delivered">Mark Delivered</option>
+            <option value="cancelled">Cancel</option>
+          </select>
+        </td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('admin-content').innerHTML = `
+    <div class="admin-grid-stats">
+      <div class="admin-stat"><div class="label">Total</div><div class="num">${allOrders.length}</div></div>
+      <div class="admin-stat"><div class="label">Paid</div><div class="num" style="color:var(--c-warning);">${counts.paid}</div></div>
+      <div class="admin-stat"><div class="label">In Transit</div><div class="num" style="color:var(--c-info);">${counts.shipped}</div></div>
+      <div class="admin-stat"><div class="label">Delivered</div><div class="num" style="color:var(--c-success);">${counts.delivered}</div></div>
+    </div>
+
+    <div class="adm-filters">
+      <input type="search" id="order-search" placeholder="Search orders, customers…" class="input adm-search" oninput="filterOrders(this.value)">
+      <select id="filter-status" class="input" style="width:160px;" onchange="filterOrders(document.getElementById('order-search').value)">
+        <option value="">All statuses</option>
+        <option value="paid">Paid only</option>
+        <option value="shipped">In Transit</option>
+        <option value="delivered">Delivered</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div class="adm-card" style="overflow:hidden;">
+      <table class="adm-table">
+        <thead>
+          <tr><th>Order</th><th>Customer</th><th>Location</th><th>Items</th><th>Total</th><th>Status</th><th>Tracking</th><th></th></tr>
+        </thead>
+        <tbody id="orders-tbody">${rows}</tbody>
+      </table>
+    </div>
+
+    <div id="order-detail-panel"></div>
+  `;
+}
+
+function filterOrders(query) {
+  const q = (query || '').toLowerCase().trim();
+  const statusFilter = document.getElementById('filter-status').value;
+  document.querySelectorAll('#orders-tbody tr').forEach(tr => {
+    const ref = tr.dataset.order;
+    const order = allOrders.find(o => o.ref === ref);
+    if (!order) return;
+    const matchesQ = !q || ref.toLowerCase().includes(q) || (order.customer || '').toLowerCase().includes(q) || (order.email || '').toLowerCase().includes(q);
+    const matchesS = !statusFilter || order.status === statusFilter;
+    tr.style.display = (matchesQ && matchesS) ? '' : 'none';
+  });
+}
+
+window.toggleOrderDetail = function(ref) {
+  const order = allOrders.find(o => o.ref === ref);
+  if (!order) return;
+  const products = window.PRODUCTS || [];
+  const itemsHtml = (order.items || []).map(it => {
+    const p = products.find(x => x.id === it.id) || {};
+    return `<tr>
+      <td><span class="mono">${escape(it.id)}</span></td>
+      <td>${escape(p.title || it.id)}</td>
+      <td>${it.qty || 1}</td>
+      <td class="num">S$${(p.priceSgd || 0).toFixed(2)}</td>
+      <td class="num">S$${((p.priceSgd || 0) * (it.qty || 1)).toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('order-detail-panel').innerHTML = `
+    <div class="adm-card admin-mt-6" id="detail-${ref}">
+      <div class="adm-card-head">
+        <div>
+          <h3>${escape(order.ref)}</h3>
+          <div class="sub">Customer: ${escape(order.customer)} · ${escape(order.city)}, ${escape(order.country)} · ${escape(order.phone || '')}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('detail-${ref}').remove()">Close</button>
+      </div>
+      <div class="adm-card-body">
+        <table class="adm-table" style="margin-bottom:24px;">
+          <thead><tr><th>Product ID</th><th>Title</th><th>Qty</th><th>Unit</th><th>Subtotal</th></tr></thead>
+          <tbody>${itemsHtml}</tbody>
+        </table>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <div><div class="muted" style="font-size:12px;">Email</div><div style="font-size:13px;">${escape(order.email)}</div></div>
+          <div><div class="muted" style="font-size:12px;">Tracking</div><div class="mono" style="font-size:13px;">${escape(order.tracking || '— pending')}</div></div>
+          <div><div class="muted" style="font-size:12px;">Stage</div><div style="font-size:13px;">${escape((order.stage || '').replace(/_/g, ' '))}</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('detail-' + ref).scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window.updateStatus = function(ref, status) {
+  const order = allOrders.find(o => o.ref === ref);
+  if (!order) return;
+  order.status = status;
+  if (status === 'shipped' && !order.tracking) {
+    const ym = new Date().toISOString().slice(0, 7).replace('-', '');
+    order.tracking = `SS-${ym}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+  }
+  // Persist non-seed orders
+  const seedRefs = new Set(SEED.map(o => o.ref));
+  const saved = allOrders.filter(o => !seedRefs.has(o.ref));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  if (window.sindoToast) sindoToast(`Order ${ref} → ${status}`);
+  render();
+};
+
+render();
+</script>
+
+<script src="../data.js?v=v6.9.2"></script>
+</body>
+</html>

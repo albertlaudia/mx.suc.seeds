@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform Console · Sign in · Sindo</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3ES%3C/text%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="design-system.css?v=v2.3">
+<link rel="stylesheet" href="admin.css?v=v2.3">
+<style>
+.console-shell {
+  background: linear-gradient(135deg, #1a0d12 0%, #2a1a22 100%);
+  color: white;
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center; padding: 32px;
+}
+.console-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r-2xl);
+  padding: 48px;
+  max-width: 460px;
+  width: 100%;
+  backdrop-filter: blur(20px);
+}
+.console-card .logo-mark {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--c-brand), var(--c-brand-hover));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 22px;
+  margin-bottom: 20px;
+}
+.console-card h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+.console-card p { color: rgba(255,255,255,0.6); font-size: var(--fs-md); margin-bottom: 32px; }
+.console-card label { font-size: var(--fs-sm); color: rgba(255,255,255,0.7); }
+.console-card input { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: white; }
+.console-card input::placeholder { color: rgba(255,255,255,0.4); }
+.console-card input:focus { border-color: var(--c-brand); box-shadow: var(--sh-glow); background: rgba(255,255,255,0.1); }
+.console-card .hint { background: rgba(255,255,255,0.04); padding: 12px 14px; border-radius: var(--r-md); font-family: monospace; font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 24px; }
+.console-card .btn-primary { background: var(--c-brand); }
+.console-card .btn-primary:hover { background: var(--c-brand-hover); }
+.console-card a { color: rgba(255,255,255,0.7); }
+.console-card a:hover { color: var(--c-brand-light); }
+</style>
+</head>
+<body>
+<div class="console-shell">
+  <div class="console-card">
+    <div class="logo-mark">K</div>
+    <h1>Katalog.id · Platform Console</h1>
+    <p>Sign in to manage tenants, billing, and platform settings.</p>
+
+    <form id="console-login-form" class="adm-form" style="gap:14px;">
+      <div class="adm-field">
+        <label>Email</label>
+        <input class="input" type="email" id="console-email" required placeholder="platform@seeds.com">
+      </div>
+      <div class="adm-field">
+        <label>Password</label>
+        <input class="input" type="password" id="console-pwd" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg" style="margin-top:8px;">Sign in to console</button>
+    </form>
+
+    <div class="hint">Demo: <code>platform@seeds.com</code> / <code>katalog-platform-2026</code></div>
+
+    <p style="font-size:13px;margin-top:24px;">
+      Need shop-level access? <a href="../shopadmin/login.html" style="color:var(--c-brand-light);font-weight:600;">Go to /shopadmin</a>
+    </p>
+  </div>
+</div>
+
+<script>
+(async function () {
+  const CORRECT = 'platform@seeds.com';
+  const PWD = 'katalog-platform-2026';
+  async function sha256(s) {
+    const buf = new TextEncoder().encode(s);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  document.getElementById('console-login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('console-email').value;
+    const pwd = document.getElementById('console-pwd').value;
+    const ok = (await sha256(email + '|' + pwd)) === (await sha256(CORRECT + '|' + PWD));
+    if (ok) {
+      sessionStorage.setItem('katalog_console_auth', JSON.stringify({ email, role: 'platform-admin', at: Date.now() }));
+      location.href = 'index.html';
+    } else {
+      e.target.querySelector('.btn').textContent = 'Invalid';
+      setTimeout(() => { e.target.querySelector('.btn').textContent = 'Sign in to console'; }, 2000);
+    }
+  });
+})();
+</script>
+</body>
+</html>

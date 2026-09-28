@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reviews · Sindo Wellness Shop Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3ES%3C/text%3C/svg%3E">
+<link rel="manifest" href="../manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../design-system.css?v=v2.3">
+<link rel="stylesheet" href="../admin.css?v=v2.3">
+</head>
+<body data-page-title="Reviews" data-page-subtitle="Approve, reply to, or remove customer reviews.">
+<div id="admin-root"></div>
+
+<script src="../admin-shell.js?v=v2.3"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const STORAGE_KEY = 'sindo_reviews_v1';
+
+function loadReviews() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+}
+
+function render() {
+  const reviews = loadReviews();
+  const rows = reviews.map(r => `
+    <tr data-rv-id="${r.id}">
+      <td>${'★'.repeat(r.rating || 5)}${'☆'.repeat(5 - (r.rating || 5))}</td>
+      <td>
+        <div style="font-weight:600;">${escape(r.title || '(no title)')}</div>
+        <div class="muted" style="font-size:11px;font-family:monospace;">${escape(r.productId || '')}</div>
+      </td>
+      <td>
+        <div>${escape(r.author)}</div>
+        <div class="muted" style="font-size:11px;">${new Date(r.createdAt).toLocaleString('en-SG', { dateStyle: 'medium' })}</div>
+      </td>
+      <td style="max-width:300px;">${escape(r.body?.slice(0, 120) || '')}${(r.body?.length || 0) > 120 ? '…' : ''}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:4px;color:var(--c-text-muted);">👍 ${r.helpful || 0}</span></td>
+      <td class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="approveReview('${r.id}')">Approve</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteReview('${r.id}')" style="color:var(--c-error);">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+
+  const avg = reviews.length
+    ? (reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)
+    : '—';
+
+  document.getElementById('admin-content').innerHTML = `
+    <div class="admin-grid-stats">
+      <div class="admin-stat"><div class="label">Total reviews</div><div class="num">${reviews.length}</div></div>
+      <div class="admin-stat"><div class="label">Avg rating</div><div class="num">${avg}</div></div>
+      <div class="admin-stat"><div class="label">5-star</div><div class="num">${reviews.filter(r => r.rating === 5).length}</div></div>
+      <div class="admin-stat"><div class="label">4-star or below</div><div class="num">${reviews.filter(r => (r.rating || 5) < 4).length}</div></div>
+    </div>
+
+    ${reviews.length === 0 ? `
+      <div class="adm-empty">
+        <div class="icon">⭐</div>
+        <h3>No reviews yet</h3>
+        <p>Reviews submitted by customers will appear here for moderation.</p>
+      </div>
+    ` : `
+      <div class="adm-card" style="overflow:hidden;">
+        <table class="adm-table">
+          <thead><tr><th>Rating</th><th>Title</th><th>Author</th><th>Body</th><th>Helpful</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `}
+
+    <div class="adm-card admin-mt-6" style="background: var(--c-surface-2);">
+      <div class="adm-card-body" style="padding:20px;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="font-size:24px;">💡</div>
+          <div style="flex:1;font-size:13px;">
+            <strong>Moderation tip:</strong> Approve reviews quickly. Reply to negative reviews within 24h — customers who get a response are 3× more likely to reorder.
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.approveReview = function(id) {
+  sindoToast(`Approved (${id})`);
+};
+
+window.deleteReview = function(id) {
+  if (!confirm('Delete this review? This cannot be undone.')) return;
+  const reviews = loadReviews().filter(r => r.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
+  sindoToast('Review deleted');
+  render();
+};
+
+render();
+</script>
+</body>
+</html>

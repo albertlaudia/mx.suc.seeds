@@ -120,6 +120,9 @@ function productCard(p) {
       <div class="thumb">
         <img ${lazyImgAttrs()} src="${img}" alt="${escapeHtml(p.title)}" onerror="this.parentNode.innerHTML='<div class=no-img>no image</div>'"/>
         <div class="src-badge">Source</div>
+        <button class="wishlist-heart" data-wishlist-product="${escapeHtml(p.id)}" aria-label="Save to wishlist" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9.5C1 8.5 3 5 6 5c2 0 3 1 4 2.5C11 6 12 5 14 5c3 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>
+        </button>
       </div>
       <div class="info">
         <div class="brand">${escapeHtml(p.brand)}</div>

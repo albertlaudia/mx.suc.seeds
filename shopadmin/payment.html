@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment · Sindo Wellness Shop Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3ES%3C/text%3C/svg%3E">
+<link rel="manifest" href="../manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../design-system.css?v=v2.3">
+<link rel="stylesheet" href="../admin.css?v=v2.3">
+</head>
+<body data-page-title="Payment methods" data-page-subtitle="Accept manual bank transfer, Stripe, or both.">
+<div id="admin-root"></div>
+
+<script src="../admin-shell.js?v=v2.3"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const STORAGE_KEY = 'sindo_payment_v1';
+const SEED = {
+  bankTransfer: { enabled: true, instructions: 'After placing your order, transfer the exact total amount to:' },
+  accounts: [
+    { bank: 'DBS Singapore', holder: 'Seeds Pte Ltd', number: '001-2-345678', swift: 'DBSSSGSG', label: 'Singapore corporate' },
+    { bank: 'BCA Indonesia', holder: 'CV Sindo Indonesia', number: '123-456-7890', swift: 'CENAIDJA', label: 'Indonesia operations' }
+  ],
+  stripe: { enabled: false, publishableKey: '', secretKey: '', webhookSecret: '' },
+  manualConfirmHours: 24
+};
+
+function load() {
+  let s = SEED;
+  try { s = { ...SEED, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }; } catch {}
+  return s;
+}
+
+function save(s) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+}
+
+function render() {
+  const s = load();
+  document.getElementById('admin-content').innerHTML = `
+    <div class="admin-grid-2">
+      <!-- Bank transfer -->
+      <div class="adm-card">
+        <div class="adm-card-head">
+          <h3>Bank transfer</h3>
+          <label class="row gap-2" style="cursor:pointer;">
+            <input type="checkbox" id="bt-enabled" ${s.bankTransfer.enabled ? 'checked' : ''} style="width:18px;height:18px;">
+            <span class="muted">Enabled</span>
+          </label>
+        </div>
+        <div class="adm-card-body">
+          <div class="adm-field">
+            <label>Instructions shown to customer</label>
+            <textarea class="input" id="bt-instructions" rows="2" style="height:auto;padding:12px;">${escape(s.bankTransfer.instructions)}</textarea>
+          </div>
+          <div class="row mt-4" style="justify-content:space-between;align-items:center;">
+            <h4 style="font-size:14px;margin:0;">Bank accounts</h4>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addAccount()">+ Add account</button>
+          </div>
+          <div id="accounts-list" class="admin-mt-4">
+            ${s.accounts.map((a, i) => `
+              <div style="border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px;margin-bottom:10px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                  <input class="input" data-acc="${i}" data-field="bank" placeholder="Bank name" value="${escape(a.bank)}">
+                  <input class="input" data-acc="${i}" data-field="holder" placeholder="Account holder" value="${escape(a.holder)}">
+                  <input class="input mono" data-acc="${i}" data-field="number" placeholder="Account number / IBAN" value="${escape(a.number)}">
+                  <input class="input mono" data-acc="${i}" data-field="swift" placeholder="SWIFT / BIC" value="${escape(a.swift)}">
+                  <input class="input" data-acc="${i}" data-field="label" placeholder="Label (e.g. SG corporate)" value="${escape(a.label)}" style="grid-column: span 2;">
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm mt-2" onclick="removeAccount(${i})" style="color:var(--c-error);">× Remove</button>
+              </div>
+            `).join('')}
+          </div>
+          <div class="adm-field admin-mt-4">
+            <label>Auto-cancel unpaid orders after (hours)</label>
+            <input type="number" class="input" id="manual-confirm-hours" value="${s.manualConfirmHours}" style="max-width:200px;">
+            <div class="hint">If payment not confirmed within this window, the order is auto-cancelled and stock returned.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stripe -->
+      <div class="adm-card">
+        <div class="adm-card-head">
+          <h3>Stripe (credit / debit cards)</h3>
+          <label class="row gap-2" style="cursor:pointer;">
+            <input type="checkbox" id="stripe-enabled" ${s.stripe.enabled ? 'checked' : ''} style="width:18px;height:18px;">
+            <span class="muted">Enabled</span>
+          </label>
+        </div>
+        <div class="adm-card-body">
+          ${s.stripe.enabled ? '' : `
+            <div class="muted" style="font-size:13px;background:var(--c-surface-2);padding:12px;border-radius:8px;margin-bottom:16px;">
+              ⚠ Stripe is disabled. Customers can only pay via bank transfer.
+            </div>
+          `}
+          <div class="adm-field">
+            <label>Publishable key</label>
+            <input class="input mono" id="stripe-pub" value="${escape(s.stripe.publishableKey)}" placeholder="pk_live_…">
+          </div>
+          <div class="adm-field">
+            <label>Secret key</label>
+            <input type="password" class="input mono" id="stripe-sec" value="${escape(s.stripe.secretKey)}" placeholder="sk_live_…">
+            <div class="hint">Stored encrypted. Never displayed.</div>
+          </div>
+          <div class="adm-field">
+            <label>Webhook signing secret</label>
+            <input class="input mono" id="stripe-whsec" value="${escape(s.stripe.webhookSecret)}">
+            <div class="hint">Verify Stripe webhooks for payment_intent.succeeded / charge.refunded.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-6" style="gap:8px;">
+      <button class="btn btn-primary" onclick="saveAll()">Save payment settings</button>
+      <button class="btn btn-ghost" onclick="load(); render();">Discard</button>
+    </div>
+  `;
+}
+
+window.addAccount = function() {
+  const s = load();
+  s.accounts.push({ bank: '', holder: '', number: '', swift: '', label: '' });
+  save(s); render();
+};
+
+window.removeAccount = function(i) {
+  if (!confirm('Remove this bank account?')) return;
+  const s = load();
+  s.accounts.splice(i, 1);
+  save(s); render();
+};
+
+window.saveAll = function() {
+  const s = load();
+  s.bankTransfer.enabled = document.getElementById('bt-enabled').checked;
+  s.bankTransfer.instructions = document.getElementById('bt-instructions').value;
+  s.manualConfirmHours = Number(document.getElementById('manual-confirm-hours').value);
+  s.stripe.enabled = document.getElementById('stripe-enabled').checked;
+  s.stripe.publishableKey = document.getElementById('stripe-pub').value;
+  s.stripe.secretKey = document.getElementById('stripe-sec').value;
+  s.stripe.webhookSecret = document.getElementById('stripe-whsec').value;
+  // Accounts
+  document.querySelectorAll('[data-acc]').forEach(input => {
+    const i = Number(input.dataset.acc);
+    const f = input.dataset.field;
+    s.accounts[i][f] = input.value;
+  });
+  save(s);
+  sindoToast('Payment settings saved');
+};
+
+render();
+</script>
+</body>
+</html>

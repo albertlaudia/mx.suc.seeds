@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products · Sindo Wellness Shop Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3ES%3C/text%3C/svg%3E">
+<link rel="manifest" href="../manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="../design-system.css?v=v2.3">
+<link rel="stylesheet" href="../admin.css?v=v2.3">
+</head>
+<body data-page-title="Products" data-page-subtitle="Manage your product catalog, prices, and inventory." data-page-actions='<button class="btn btn-primary" onclick="openAddProduct()">+ Add product</button>'>
+<div id="admin-root"></div>
+
+<script src="../admin-shell.js?v=v2.3"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const STORAGE_KEY = 'sindo_admin_products_v1';
+let products = [];
+
+function render() {
+  const counts = { active: 0, low: 0, out: 0 };
+  products.forEach(p => {
+    const stock = p.stock ?? 100;
+    if (stock === 0) counts.out++;
+    else if (stock < 10) counts.low++;
+    else counts.active++;
+  });
+
+  const rows = products.map(p => {
+    const stock = p.stock ?? 100;
+    const stockBadge = stock === 0 ? 'out' : stock < 10 ? 'low' : 'active';
+    const stockLabel = stock === 0 ? 'Out of stock' : stock < 10 ? `${stock} left` : 'In stock';
+    return `
+      <tr data-product-id="${p.id}">
+        <td><img src="${p.image}" alt="" style="width:40px;height:40px;border-radius:6px;object-fit:cover;" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23fce4ec%22/></svg>'"></td>
+        <td>
+          <div style="font-weight:600;">${escape(p.title)}</div>
+          <div class="muted" style="font-size:11px;font-family:monospace;">${escape(p.id)}</div>
+        </td>
+        <td>${escape(p.brand)}</td>
+        <td>${escape(p.category)}</td>
+        <td class="num">S$${p.priceSgd.toFixed(2)}</td>
+        <td><span class="adm-status ${stockBadge}">${stockLabel}</span></td>
+        <td class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="editProduct('${p.id}')">Edit</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleStock('${p.id}')">Toggle stock</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('admin-content').innerHTML = `
+    <div class="admin-grid-stats">
+      <div class="admin-stat"><div class="label">Active</div><div class="num">${counts.active}</div></div>
+      <div class="admin-stat"><div class="label">Low stock</div><div class="num" style="color:var(--c-warning);">${counts.low}</div></div>
+      <div class="admin-stat"><div class="label">Out of stock</div><div class="num" style="color:var(--c-error);">${counts.out}</div></div>
+    </div>
+
+    <div class="adm-filters">
+      <input type="search" id="prod-search" placeholder="Search by name, brand, ID…" class="input adm-search" oninput="filterProducts()">
+      <select id="filter-cat" class="input" style="width:200px;" onchange="filterProducts()">
+        <option value="">All categories</option>
+        ${[...new Set(products.map(p => p.category))].sort().map(c => `<option>${escape(c)}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="adm-card" style="overflow:hidden;">
+      <table class="adm-table">
+        <thead><tr><th></th><th>Product</th><th>Brand</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead>
+        <tbody id="prod-tbody">${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function filterProducts() {
+  const q = document.getElementById('prod-search').value.toLowerCase().trim();
+  const cat = document.getElementById('filter-cat').value;
+  document.querySelectorAll('#prod-tbody tr').forEach(tr => {
+    const p = products.find(x => x.id === tr.dataset.productId);
+    if (!p) return;
+    const matchesQ = !q || p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.id.includes(q);
+    const matchesC = !cat || p.category === cat;
+    tr.style.display = (matchesQ && matchesC) ? '' : 'none';
+  });
+}
+
+window.toggleStock = function(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  p.stock = (p.stock ?? 100) > 0 ? 0 : 50;
+  saveProducts();
+  sindoToast(`${id}: stock = ${p.stock}`);
+  render();
+};
+
+window.editProduct = function(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  openModal({
+    title: 'Edit product',
+    fields: ['title', 'brand', 'category', 'priceSgd', 'weightGrams', 'image', 'stock'],
+    data: p,
+    submit: (form) => {
+      Object.assign(p, form);
+      saveProducts();
+      sindoToast(`${id} saved`);
+      render();
+    }
+  });
+};
+
+window.openAddProduct = function() {
+  openModal({
+    title: 'Add product',
+    fields: ['id', 'title', 'brand', 'category', 'priceSgd', 'weightGrams', 'image', 'stock'],
+    data: { id: 'new-' + Date.now(), stock: 50 },
+    submit: (form) => {
+      products.unshift(form);
+      saveProducts();
+      sindoToast('Product added');
+      render();
+    }
+  });
+};
+
+function saveProducts() {
+  // Persist only local edits, not catalog imports
+  const catalogIds = new Set((window.PRODUCTS || []).map(p => p.id));
+  const newOnes = products.filter(p => !catalogIds.has(p.id));
+  const edits = products.filter(p => catalogIds.has(p.id)).map(p => ({ id: p.id, edits: { priceSgd: p.priceSgd, stock: p.stock ?? 100 } }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ newOnes, edits }));
+}
+
+function loadEdits() {
+  // First, copy catalog
+  products = (window.PRODUCTS || []).map(p => ({ ...p }));
+  // Apply saved edits
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (saved.edits?.length) {
+      saved.edits.forEach(e => {
+        const p = products.find(x => x.id === e.id);
+        if (p) Object.assign(p, e.edits);
+      });
+    }
+    if (saved.newOnes?.length) {
+      products.unshift(...saved.newOnes);
+    }
+  } catch {}
+}
+
+function openModal({ title, fields, data, submit }) {
+  const modal = document.createElement('div');
+  modal.className = 'admin-modal';
+  modal.innerHTML = `
+    <div class="admin-modal-content">
+      <div class="admin-modal-head">
+        <h3>${escape(title)}</h3>
+        <button class="btn btn-ghost btn-sm" onclick="this.closest('.admin-modal').remove()">×</button>
+      </div>
+      <form class="adm-form" id="modal-form">
+        ${fields.map(f => `
+          <div class="adm-field">
+            <label>${f}</label>
+            <input class="input" name="${f}" value="${escape(data[f] ?? '')}" ${f === 'id' ? 'readonly' : ''}>
+          </div>
+        `).join('')}
+        <div class="admin-modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="this.closest('.admin-modal').remove()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector('#modal-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = Object.fromEntries(new FormData(e.target));
+    ['priceSgd', 'weightGrams', 'stock'].forEach(k => fd[k] = Number(fd[k]));
+    submit(fd);
+    modal.remove();
+  });
+}
+
+loadEdits();
+render();
+</script>
+
+<script src="../data.js?v=v6.9.2"></script>
+</body>
+</html>

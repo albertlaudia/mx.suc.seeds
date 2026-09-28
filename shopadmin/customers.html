@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customers · Sindo Wellness Shop Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3ES%3C/text%3C/svg%3E">
+<link rel="manifest" href="../manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="../design-system.css?v=v2.3">
+<link rel="stylesheet" href="../admin.css?v=v2.3">
+</head>
+<body data-page-title="Customers" data-page-subtitle="All customers who placed an order, with lifetime value.">
+<div id="admin-root"></div>
+
+<script src="../admin-shell.js?v=v2.3"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const STORAGE_KEY = 'sindo_admin_orders_v1';
+const SEED = [
+  { email: 'aria@example.com', name: 'Aria Setiawan', city: 'Singapore', country: 'SG', totalSgd: 87.45, orders: 1 },
+  { email: 'j.lee@example.com', name: 'Jason Lee', city: 'Jakarta', country: 'ID', totalSgd: 47.94, orders: 1 },
+  { email: 'maya@example.com', name: 'Maya Wong', city: 'Kuala Lumpur', country: 'MY', totalSgd: 144.27, orders: 1 },
+  { email: 'test@example.com', name: 'Test Buyer', city: 'Singapore', country: 'SG', totalSgd: 43.87, orders: 1 }
+];
+
+function aggregateCustomers() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const allOrders = [...saved];
+  const map = new Map();
+  SEED.forEach(c => map.set(c.email, { ...c, source: 'seed' }));
+  allOrders.forEach(o => {
+    const e = o.email || 'unknown@x.com';
+    const ex = map.get(e) || { email: e, name: o.customer || 'Unknown', city: o.city || '', country: o.country || '', totalSgd: 0, orders: 0, source: 'live' };
+    ex.totalSgd = (ex.totalSgd || 0) + (o.totalSgd || 0);
+    ex.orders = (ex.orders || 0) + 1;
+    ex.city = ex.city || o.city;
+    ex.country = ex.country || o.country;
+    map.set(e, ex);
+  });
+  return [...map.values()].sort((a, b) => b.totalSgd - a.totalSgd);
+}
+
+function render() {
+  const customers = aggregateCustomers();
+  const totalRev = customers.reduce((s, c) => s + c.totalSgd, 0);
+  const totalOrders = customers.reduce((s, c) => s + c.orders, 0);
+
+  const rows = customers.map(c => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar" style="width:32px;height:32px;font-size:13px;background:linear-gradient(135deg,var(--c-brand),var(--c-brand-hover));">${(c.name || c.email)[0].toUpperCase()}</div>
+          <div>
+            <div style="font-weight:600;">${escape(c.name)}</div>
+            <div class="muted" style="font-size:11px;">${escape(c.email)}</div>
+          </div>
+        </div>
+      </td>
+      <td>${escape(c.city || '—')}, ${escape(c.country || '')}</td>
+      <td>${c.orders}</td>
+      <td class="num">S$${c.totalSgd.toFixed(2)}</td>
+      <td>
+        ${c.source === 'seed'
+          ? '<span class="adm-status">Demo data</span>'
+          : '<span class="adm-status paid">Active</span>'}
+      </td>
+      <td class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="alert('Email: ${escape(c.email)}\\nTotal spent: S$${c.totalSgd.toFixed(2)}')">View</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('admin-content').innerHTML = `
+    <div class="admin-grid-stats">
+      <div class="admin-stat"><div class="label">Customers</div><div class="num">${customers.length}</div></div>
+      <div class="admin-stat"><div class="label">Total orders</div><div class="num">${totalOrders}</div></div>
+      <div class="admin-stat"><div class="label">Lifetime revenue</div><div class="num">S$${totalRev.toFixed(2)}</div></div>
+      <div class="admin-stat"><div class="label">Avg order value</div><div class="num">S$${(totalOrders > 0 ? totalRev / totalOrders : 0).toFixed(2)}</div></div>
+    </div>
+
+    <div class="adm-card" style="overflow:hidden;">
+      <div class="adm-card-body tight">
+        <table class="adm-table">
+          <thead><tr><th>Customer</th><th>Location</th><th>Orders</th><th>Lifetime spend</th><th>Status</th><th></th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="6" style="text-align:center;padding:48px;color:var(--c-text-muted);">No customers yet</td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>
