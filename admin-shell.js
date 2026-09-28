@@ -135,7 +135,7 @@
             ${pageActions}
           </div>
         </div>
-        <div id="admin-content"></div>
+        <div id="adm-page-content"></div>
       </main>
     </div>
   `;
