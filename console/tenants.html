@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenants · Katalog.id Console</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3EK%3C/text%3C/svg%3E">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="/design-system.css?v=v2.8">
+<link rel="stylesheet" href="/admin.css?v=v2.8">
+</head>
+<body data-page-title="Tenants" data-page-subtitle="Every shop running on the platform — drill into any tenant for full configuration." data-console="true">
+<div id="admin-root"></div>
+
+<script src="/admin-shell.js?v=v2.8"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const TENANTS = [
+  {
+    id: 'sindo', name: 'Sindo Wellness', domain: 'seeds.scaleupcrm.com',
+    tier: 'growth', status: 'active', mrr: 89, gmv30d: 1247, products: 11, orders: 4,
+    createdAt: '2026-09-15', ownerEmail: 'owner@seeds.scaleupcrm.com',
+    paymentMethods: ['manual_bank_transfer', 'stripe'],
+    bankAccounts: 2, stripeConnected: false,
+    shipping: { origin: 'SG', destination: ['SG','ID','MY','BN','TH','OTHER'], ratePer100g: 3, markupPct: 10 },
+    features: { kbeauty: true, wishlist: true, reviews: true, newsletter: true },
+    webhooks: { orders: 'https://api.sindo.id/v1/webhooks/orders', delivery: null }
+  },
+  {
+    id: 'kbeauty', name: 'K-beauty (Sindo demo 2)', domain: 'seeds.scaleupcrm.com/kbeauty',
+    tier: 'starter', status: 'trial', mrr: 0, gmv30d: 0, products: 12, orders: 0,
+    createdAt: '2026-09-26', ownerEmail: 'demo+kb@sindo.id',
+    paymentMethods: ['manual_bank_transfer'],
+    bankAccounts: 1, stripeConnected: false,
+    shipping: { origin: 'KR', destination: ['SG','ID','MY'], ratePer100g: 4, markupPct: 15 },
+    features: { kbeauty: true, wishlist: true, reviews: false, newsletter: true },
+    webhooks: { orders: null, delivery: null }
+  },
+  {
+    id: 'katalog-prod', name: 'Katalog.id (main)', domain: 'seedcart.scaleupcrm.com',
+    tier: 'enterprise', status: 'provisioning', mrr: 0, gmv30d: 0, products: 0, orders: 0,
+    createdAt: '2026-09-28', ownerEmail: 'platform@katalog.id',
+    paymentMethods: [],
+    bankAccounts: 0, stripeConnected: false,
+    shipping: { origin: null, destination: [], ratePer100g: null, markupPct: null },
+    features: { kbeauty: false, wishlist: false, reviews: false, newsletter: false },
+    webhooks: { orders: null, delivery: null }
+  }
+];
+
+const STORAGE_KEY = 'katalog_tenants_v1';
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (saved && Array.isArray(saved)) return saved;
+  } catch {}
+  return TENANTS;
+}
+
+function save(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+let tenants = load();
+let activeTenantId = null;
+let filter = { q: '', status: '', tier: '' };
+
+function render() {
+  const filtered = tenants.filter(t => {
+    if (filter.q) {
+      const q = filter.q.toLowerCase();
+      const hay = `${t.name} ${t.domain} ${t.id} ${t.ownerEmail}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (filter.status && t.status !== filter.status) return false;
+    if (filter.tier && t.tier !== filter.tier) return false;
+    return true;
+  });
+
+  const totalMrr = tenants.reduce((s, t) => s + t.mrr, 0);
+  const totalGmv = tenants.reduce((s, t) => s + t.gmv30d, 0);
+
+  const rows = filtered.map(t => {
+    const tierBadge = { starter: '', growth: 'paid', enterprise: 'shipped' }[t.tier] || '';
+    const statusBadge = { active: 'paid', trial: 'shipped', provisioning: 'pending', suspended: 'low', cancelled: 'cancelled' }[t.status] || 'pending';
+    const statusLabel = { active: 'Active', trial: 'Trial', provisioning: 'Provisioning', suspended: 'Suspended', cancelled: 'Cancelled' }[t.status] || t.status;
+    return `
+      <tr data-tenant-id="${t.id}">
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="avatar" style="width:32px;height:32px;font-size:13px;background:linear-gradient(135deg,#c4476a,#a93558);">${(t.name || t.id)[0].toUpperCase()}</div>
+            <div>
+              <div style="font-weight:600;">${escape(t.name)}</div>
+              <div class="muted" style="font-size:11px;font-family:monospace;">${escape(t.id)}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="mono" style="font-size:12px;">${escape(t.domain)}</span></td>
+        <td><span class="adm-status ${tierBadge}">${escape(t.tier)}</span></td>
+        <td><span class="adm-status ${statusBadge}">${statusLabel}</span></td>
+        <td class="num">S$${t.mrr}/mo</td>
+        <td class="num">S$${t.gmv30d}</td>
+        <td>${t.products} items · ${t.orders} orders</td>
+        <td class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="openDetail('${t.id}')">Manage</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('xmain').innerHTML = `
+    <div class="admin-grid-stats">
+      <div class="admin-stat"><div class="label">Tenants</div><div class="num">${tenants.length}</div></div>
+      <div class="admin-stat"><div class="label">Active</div><div class="num" style="color:var(--c-success);">${tenants.filter(t => t.status === 'active').length}</div></div>
+      <div class="admin-stat"><div class="label">Trial</div><div class="num" style="color:var(--c-info);">${tenants.filter(t => t.status === 'trial').length}</div></div>
+      <div class="admin-stat"><div class="label">Provisioning</div><div class="num" style="color:var(--c-warning);">${tenants.filter(t => t.status === 'provisioning').length}</div></div>
+      <div class="admin-stat"><div class="label">Platform MRR</div><div class="num">S$${totalMrr}</div></div>
+      <div class="admin-stat"><div class="label">Platform GMV 30d</div><div class="num">S$${totalGmv.toFixed(0)}</div></div>
+    </div>
+
+    <div class="row mb-4" style="gap:8px;justify-content:flex-end;">
+      <button class="btn btn-primary" onclick="openProvision()">+ Provision tenant</button>
+    </div>
+
+    <div class="adm-filters">
+      <input type="search" id="t-search" placeholder="Search name, domain, owner email…" class="input adm-search" value="${escape(filter.q)}" oninput="setFilter('q', this.value)">
+      <select id="f-status" class="input" style="width:160px;" onchange="setFilter('status', this.value)">
+        <option value="">All statuses</option>
+        <option value="active" ${filter.status === 'active' ? 'selected' : ''}>Active</option>
+        <option value="trial" ${filter.status === 'trial' ? 'selected' : ''}>Trial</option>
+        <option value="provisioning" ${filter.status === 'provisioning' ? 'selected' : ''}>Provisioning</option>
+        <option value="suspended" ${filter.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+        <option value="cancelled" ${filter.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+      </select>
+      <select id="f-tier" class="input" style="width:160px;" onchange="setFilter('tier', this.value)">
+        <option value="">All tiers</option>
+        <option value="starter" ${filter.tier === 'starter' ? 'selected' : ''}>Starter</option>
+        <option value="growth" ${filter.tier === 'growth' ? 'selected' : ''}>Growth</option>
+        <option value="enterprise" ${filter.tier === 'enterprise' ? 'selected' : ''}>Enterprise</option>
+      </select>
+    </div>
+
+    <div class="adm-card" style="overflow:hidden;">
+      <table class="adm-table">
+        <thead>
+          <tr><th>Tenant</th><th>Domain</th><th>Tier</th><th>Status</th><th>MRR</th><th>GMV 30d</th><th>Catalog</th><th></th></tr>
+        </thead>
+        <tbody id="t-tbody">${rows || `<tr><td colspan="8" style="text-align:center;padding:48px;color:var(--c-text-muted);">No tenants match filters</td></tr>`}</tbody>
+      </table>
+    </div>
+
+    <div id="detail-panel"></div>
+  `;
+}
+
+window.setFilter = function(key, value) {
+  filter[key] = value;
+  render();
+};
+
+window.openProvision = function() {
+  openModal({
+    title: 'Provision new tenant',
+    fields: [
+      { name: 'id', label: 'Tenant ID (kebab-case)', placeholder: 'acme-store' },
+      { name: 'name', label: 'Display name', placeholder: 'Acme Store' },
+      { name: 'domain', label: 'Subdomain', placeholder: 'acme.scaleupcrm.com' },
+      { name: 'ownerEmail', label: 'Owner email', placeholder: 'owner@acme.com' },
+      { name: 'tier', label: 'Tier', type: 'select', options: ['starter','growth','enterprise'] }
+    ],
+    data: { id: '', name: '', domain: '', ownerEmail: '', tier: 'starter' },
+    submit: (form) => {
+      if (!form.id || !form.name) { alert('id and name required'); return; }
+      if (tenants.find(t => t.id === form.id)) { alert('Tenant ID already exists'); return; }
+      tenants.unshift({
+        ...form,
+        status: 'provisioning', mrr: 0, gmv30d: 0, products: 0, orders: 0,
+        createdAt: new Date().toISOString().slice(0, 10),
+        paymentMethods: [], bankAccounts: 0, stripeConnected: false,
+        shipping: { origin: null, destination: [], ratePer100g: null, markupPct: null },
+        features: { kbeauty: false, wishlist: true, reviews: true, newsletter: true },
+        webhooks: { orders: null, delivery: null }
+      });
+      save(tenants);
+      sindoToast('Tenant provisioned');
+      render();
+    }
+  });
+};
+
+window.openDetail = function(id) {
+  const t = tenants.find(x => x.id === id);
+  if (!t) return;
+  const pmHtml = (t.paymentMethods || []).map(p => `<span class="adm-status">${escape(p)}</span>`).join(' ') || '<span class="muted">none</span>';
+  const destHtml = (t.shipping.destination || []).map(d => `<span class="adm-tag">${escape(d)}</span>`).join(' ') || '<span class="muted">none</span>';
+  document.getElementById('detail-panel').innerHTML = `
+    <div class="adm-card admin-mt-6" id="detail-${t.id}">
+      <div class="adm-card-head">
+        <div>
+          <h3>${escape(t.name)} <span class="muted" style="font-weight:400;font-size:13px;font-family:monospace;">${escape(t.id)}</span></h3>
+          <div class="sub">Owner: ${escape(t.ownerEmail)} · Created ${escape(t.createdAt)}</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-sm" onclick="changeStatus('${t.id}', '${t.status === 'active' ? 'suspended' : 'active'}')">${t.status === 'active' ? 'Suspend' : 'Activate'}</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('detail-${t.id}').remove()">Close</button>
+        </div>
+      </div>
+      <div class="adm-card-body">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:24px;">
+          <div>
+            <h4 style="font-size:13px;text-transform:uppercase;letter-spacing:0.04em;color:var(--c-text-muted);margin:0 0 8px;">Identity</h4>
+            <div style="font-size:13px;line-height:1.9;">
+              <div><span class="muted">Domain:</span> <span class="mono">${escape(t.domain)}</span></div>
+              <div><span class="muted">Tier:</span> <span class="adm-status ${t.tier === 'growth' ? 'paid' : t.tier === 'enterprise' ? 'shipped' : ''}">${escape(t.tier)}</span></div>
+              <div><span class="muted">Status:</span> <span class="adm-status ${t.status === 'active' ? 'paid' : t.status === 'trial' ? 'shipped' : 'pending'}">${escape(t.status)}</span></div>
+              <div><span class="muted">Owner:</span> ${escape(t.ownerEmail)}</div>
+            </div>
+          </div>
+          <div>
+            <h4 style="font-size:13px;text-transform:uppercase;letter-spacing:0.04em;color:var(--c-text-muted);margin:0 0 8px;">Commerce</h4>
+            <div style="font-size:13px;line-height:1.9;">
+              <div><span class="muted">Payment methods:</span> ${pmHtml}</div>
+              <div><span class="muted">Bank accounts:</span> ${t.bankAccounts}</div>
+              <div><span class="muted">Stripe Connect:</span> ${t.stripeConnected ? '<span class="adm-status paid">Connected</span>' : '<span class="muted">Not connected</span>'}</div>
+              <div><span class="muted">Webhooks:</span> ${t.webhooks.orders ? '<span class="adm-status">Configured</span>' : '<span class="muted">Not set</span>'}</div>
+            </div>
+          </div>
+          <div>
+            <h4 style="font-size:13px;text-transform:uppercase;letter-spacing:0.04em;color:var(--c-text-muted);margin:0 0 8px;">Shipping</h4>
+            <div style="font-size:13px;line-height:1.9;">
+              <div><span class="muted">Origin warehouse:</span> ${t.shipping.origin ? `<span class="adm-tag">${escape(t.shipping.origin)}</span>` : '<span class="muted">—</span>'}</div>
+              <div><span class="muted">Destinations:</span> ${destHtml}</div>
+              <div><span class="muted">Rate:</span> ${t.shipping.ratePer100g ? `S$${t.shipping.ratePer100g}/100g + ${t.shipping.markupPct}%` : '<span class="muted">—</span>'}</div>
+            </div>
+          </div>
+          <div>
+            <h4 style="font-size:13px;text-transform:uppercase;letter-spacing:0.04em;color:var(--c-text-muted);margin:0 0 8px;">Performance (30d)</h4>
+            <div style="font-size:13px;line-height:1.9;">
+              <div><span class="muted">MRR:</span> <span class="mono">S$${t.mrr}</span></div>
+              <div><span class="muted">GMV:</span> <span class="mono">S$${t.gmv30d}</span></div>
+              <div><span class="muted">Products:</span> ${t.products}</div>
+              <div><span class="muted">Orders:</span> ${t.orders}</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="alert('In production: impersonate ${escape(t.ownerEmail)} and open tenant admin')">Impersonate</button>
+          <button class="btn btn-secondary btn-sm" onclick="alert('Open Stripe dashboard for ${escape(t.id)}')">View Stripe</button>
+          <button class="btn btn-secondary btn-sm" onclick="alert('Export ${escape(t.id)} full data dump')">Export data</button>
+          <button class="btn btn-ghost btn-sm" onclick="changeStatus('${t.id}', 'cancelled')" style="color:var(--c-error);margin-left:auto;">Cancel tenant</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('detail-' + t.id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window.changeStatus = function(id, status) {
+  const t = tenants.find(x => x.id === id);
+  if (!t) return;
+  t.status = status;
+  save(tenants);
+  sindoToast(`${t.name} → ${status}`);
+  render();
+};
+
+function openModal({ title, fields, data, submit }) {
+  const modal = document.createElement('div');
+  modal.className = 'admin-modal';
+  modal.innerHTML = `
+    <div class="admin-modal-content">
+      <div class="admin-modal-head">
+        <h3>${escape(title)}</h3>
+        <button class="btn btn-ghost btn-sm" onclick="this.closest('.admin-modal').remove()">×</button>
+      </div>
+      <form class="adm-form" id="modal-form">
+        ${fields.map(f => `
+          <div class="adm-field">
+            <label>${escape(f.label)}</label>
+            ${f.type === 'select'
+              ? `<select class="input" name="${f.name}">${f.options.map(o => `<option ${data[f.name] === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`
+              : `<input class="input" name="${f.name}" placeholder="${escape(f.placeholder || '')}" value="${escape(data[f.name] || '')}">`
+            }
+          </div>
+        `).join('')}
+        <div class="admin-modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="this.closest('.admin-modal').remove()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector('#modal-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = Object.fromEntries(new FormData(e.target));
+    submit(fd);
+    modal.remove();
+  });
+}
+
+render();
+</script>
+</body>
+</html>

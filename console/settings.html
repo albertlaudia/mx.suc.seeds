@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform settings · Katalog.id Console</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3EK%3C/text%3C/svg%3E">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="/design-system.css?v=v2.8">
+<link rel="stylesheet" href="/admin.css?v=v2.8">
+</head>
+<body data-page-title="Platform settings" data-page-subtitle="Global configuration for Katalog.id — affects every tenant on the platform." data-console="true">
+<div id="admin-root"></div>
+
+<script src="/admin-shell.js?v=v2.8"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const STORAGE_KEY = 'katalog_platform_settings_v1';
+const SEED = {
+  // Global limits
+  limits: {
+    maxProductsPerTenant: 9999,
+    maxOrdersPerMonth: 99999,
+    maxImageUploadMb: 8,
+    maxApiRequestsPerMin: 600
+  },
+  // Stripe Connect platform settings
+  stripe: {
+    platformAccountId: 'acct_1Q5kZNJi9Z8hZs3G',
+    applicationFeePercent: 0,
+    defaultPayoutSchedule: 'weekly',
+    stripeWebhookSecret: 'whsec_••••••••••••',
+    stripeApiKeyLast4: 'JkL9'
+  },
+  // Email
+  email: {
+    fromName: 'Katalog.id',
+    fromAddress: 'no-reply@katalog.id',
+    replyTo: 'support@katalog.id',
+    provider: 'sendgrid',
+    sendgridApiKeyLast4: 'X42m'
+  },
+  // CDN / Cloudflare
+  cdn: {
+    cloudflareZone: 'scaleupcrm.com',
+    defaultTtlSeconds: 14400,
+    cacheBustPrefix: 'v',
+    edgeRegions: 14
+  },
+  // Infrastructure
+  infra: {
+    apiHost: 'api.katalog.id',
+    websocketHost: 'wss://api.katalog.id',
+    postgresHost: 'pg.katalog.internal',
+    redisHost: 'redis.katalog.internal',
+    dokployUrl: 'https://dokploy.scaleupcrm.com'
+  },
+  // Feature flags
+  flags: {
+    selfServeTenantOnboarding: false,
+    multiCurrencyDisplay: true,
+    catalogAiTagging: true,
+    shopCustomDomain: true,
+    webhookRetries: true,
+    autoConfirmPaidOrders: false
+  }
+};
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (saved) return { ...SEED, ...saved, flags: { ...SEED.flags, ...(saved.flags || {}) } };
+  } catch {}
+  return SEED;
+}
+
+function save(s) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+}
+
+function render() {
+  const s = load();
+  document.getElementById('xmain').innerHTML = `
+    <form id="settings-form" class="adm-form">
+      <!-- Global limits -->
+      <div class="adm-card">
+        <div class="adm-card-head">
+          <div>
+            <h3>Global limits</h3>
+            <div class="sub">Per-tenant hard caps</div>
+          </div>
+        </div>
+        <div class="adm-card-body">
+          <div class="adm-form-row">
+            <div class="adm-field">
+              <label>Max products / tenant</label>
+              <input type="number" class="input" name="maxProductsPerTenant" value="${s.limits.maxProductsPerTenant}">
+            </div>
+            <div class="adm-field">
+              <label>Max orders / month</label>
+              <input type="number" class="input" name="maxOrdersPerMonth" value="${s.limits.maxOrdersPerMonth}">
+            </div>
+            <div class="adm-field">
+              <label>Max image upload (MB)</label>
+              <input type="number" class="input" name="maxImageUploadMb" value="${s.limits.maxImageUploadMb}">
+            </div>
+            <div class="adm-field">
+              <label>Max API req / min</label>
+              <input type="number" class="input" name="maxApiRequestsPerMin" value="${s.limits.maxApiRequestsPerMin}">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stripe Connect -->
+      <div class="adm-card admin-mt-4">
+        <div class="adm-card-head">
+          <div>
+            <h3>Stripe Connect platform</h3>
+            <div class="sub">Tenant onboarding + fee capture</div>
+          </div>
+        </div>
+        <div class="adm-card-body">
+          <div class="adm-form-row">
+            <div class="adm-field">
+              <label>Platform account ID</label>
+              <input class="input mono" name="platformAccountId" value="${escape(s.stripe.platformAccountId)}">
+            </div>
+            <div class="adm-field">
+              <label>Application fee %</label>
+              <input type="number" step="0.1" class="input" name="applicationFeePercent" value="${s.stripe.applicationFeePercent}">
+              <div class="hint">Default platform fee on every tenant charge</div>
+            </div>
+          </div>
+          <div class="adm-form-row">
+            <div class="adm-field">
+              <label>Default payout schedule</label>
+              <select class="input" name="defaultPayoutSchedule">
+                <option ${s.stripe.defaultPayoutSchedule === 'daily' ? 'selected' : ''}>daily</option>
+                <option ${s.stripe.defaultPayoutSchedule === 'weekly' ? 'selected' : ''}>weekly</option>
+                <option ${s.stripe.defaultPayoutSchedule === 'monthly' ? 'selected' : ''}>monthly</option>
+              </select>
+            </div>
+            <div class="adm-field">
+              <label>Stripe API key (last 4)</label>
+              <input class="input mono" name="stripeApiKeyLast4" value="${escape(s.stripe.stripeApiKeyLast4)}" readonly>
+              <div class="hint">Full key is stored encrypted in env. To rotate, use the secret manager.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="adm-card admin-mt-4">
+        <div class="adm-card-head">
+          <div>
+            <h3>Email delivery</h3>
+            <div class="sub">Transactional + newsletter sender</div>
+          </div>
+        </div>
+        <div class="adm-card-body">
+          <div class="adm-form-row">
+            <div class="adm-field">
+              <label>From name</label>
+              <input class="input" name="fromName" value="${escape(s.email.fromName)}">
+            </div>
+            <div class="adm-field">
+              <label>From address</label>
+              <input type="email" class="input" name="fromAddress" value="${escape(s.email.fromAddress)}">
+            </div>
+            <div class="adm-field">
+              <label>Reply-to</label>
+              <input type="email" class="input" name="replyTo" value="${escape(s.email.replyTo)}">
+            </div>
+            <div class="adm-field">
+              <label>Provider</label>
+              <select class="input" name="provider">
+                <option ${s.email.provider === 'sendgrid' ? 'selected' : ''}>sendgrid</option>
+                <option ${s.email.provider === 'mailgun' ? 'selected' : ''}>mailgun</option>
+                <option ${s.email.provider === 'ses' ? 'selected' : ''}>ses</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CDN -->
+      <div class="adm-card admin-mt-4">
+        <div class="adm-card-head">
+          <div>
+            <h3>CDN / Cloudflare</h3>
+            <div class="sub">Edge cache + cache-bust prefix</div>
+          </div>
+        </div>
+        <div class="adm-card-body">
+          <div class="adm-form-row">
+            <div class="adm-field">
+              <label>Cloudflare zone</label>
+              <input class="input mono" name="cloudflareZone" value="${escape(s.cdn.cloudflareZone)}">
+            </div>
+            <div class="adm-field">
+              <label>Default TTL (s)</label>
+              <input type="number" class="input" name="defaultTtlSeconds" value="${s.cdn.defaultTtlSeconds}">
+            </div>
+            <div class="adm-field">
+              <label>Cache-bust prefix</label>
+              <input class="input mono" name="cacheBustPrefix" value="${escape(s.cdn.cacheBustPrefix)}" maxlength="3" style="width:60px;">
+              <div class="hint">app.js?v=&lt;prefix&gt;X.Y</div>
+            </div>
+            <div class="adm-field">
+              <label>Active edge regions</label>
+              <input class="input mono" value="${s.cdn.edgeRegions}" readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure -->
+      <div class="adm-card admin-mt-4">
+        <div class="adm-card-head">
+          <div>
+            <h3>Infrastructure</h3>
+            <div class="sub">Internal endpoints — don't change without coordination</div>
+          </div>
+        </div>
+        <div class="adm-card-body">
+          <div class="adm-form-row">
+            <div class="adm-field">
+              <label>API host</label>
+              <input class="input mono" name="apiHost" value="${escape(s.infra.apiHost)}">
+            </div>
+            <div class="adm-field">
+              <label>WebSocket host</label>
+              <input class="input mono" name="websocketHost" value="${escape(s.infra.websocketHost)}">
+            </div>
+            <div class="adm-field">
+              <label>Postgres host</label>
+              <input class="input mono" name="postgresHost" value="${escape(s.infra.postgresHost)}" readonly>
+            </div>
+            <div class="adm-field">
+              <label>Redis host</label>
+              <input class="input mono" name="redisHost" value="${escape(s.infra.redisHost)}" readonly>
+            </div>
+            <div class="adm-field">
+              <label>Dokploy</label>
+              <input class="input mono" name="dokployUrl" value="${escape(s.infra.dokployUrl)}">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature flags -->
+      <div class="adm-card admin-mt-4">
+        <div class="adm-card-head">
+          <div>
+            <h3>Feature flags</h3>
+            <div class="sub">Roll out new features to tenants gradually</div>
+          </div>
+        </div>
+        <div class="adm-card-body tight">
+          <table class="adm-table">
+            <thead><tr><th>Flag</th><th>Description</th><th>Status</th></tr></thead>
+            <tbody>
+              ${Object.entries(s.flags).map(([k, v]) => `
+                <tr>
+                  <td class="mono" style="font-size:12px;">${k}</td>
+                  <td class="muted" style="font-size:12px;">${flagDesc(k)}</td>
+                  <td><label style="cursor:pointer;display:flex;align-items:center;gap:8px;"><input type="checkbox" name="flag:${k}" ${v ? 'checked' : ''} style="width:18px;height:18px;">${v ? '<span class=adm-status paid>Enabled</span>' : '<span class=adm-status>Disabled</span>'}</label></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row mt-6" style="gap:8px;">
+        <button type="submit" class="btn btn-primary">Save platform settings</button>
+        <button type="button" class="btn btn-ghost" onclick="load(); render();">Discard changes</button>
+      </div>
+    </form>
+
+    <div class="adm-card admin-mt-6" style="border-color:var(--c-error); background:linear-gradient(135deg, #fef2f2, white);">
+      <div class="adm-card-body" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="font-size:24px;">⚠️</div>
+        <div style="flex:1;">
+          <div style="font-weight:600;">Destructive platform actions</div>
+          <div class="muted" style="font-size:13px;line-height:1.6;">
+            These affect every tenant on the platform. Run during off-hours only.
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="alert('Maintenance mode scheduled for all tenants')" style="color:var(--c-warning);">Schedule maintenance</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="alert('Cache purged across all 14 edge regions')">Purge all CDN cache</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="alert('Webhook deliveries re-driven from 14:00 UTC onwards')">Replay failed webhooks</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="if(confirm('Reset ALL platform data? Cannot be undone.')) alert('This would nuke the platform in production.')" style="color:var(--c-error);">Reset platform data…</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = Object.fromEntries(new FormData(e.target));
+    const next = JSON.parse(JSON.stringify(load()));
+    ['maxProductsPerTenant','maxOrdersPerMonth','maxImageUploadMb','maxApiRequestsPerMin'].forEach(k => next.limits[k] = Number(fd[k]));
+    next.stripe.platformAccountId = fd.platformAccountId;
+    next.stripe.applicationFeePercent = Number(fd.applicationFeePercent);
+    next.stripe.defaultPayoutSchedule = fd.defaultPayoutSchedule;
+    next.email.fromName = fd.fromName;
+    next.email.fromAddress = fd.fromAddress;
+    next.email.replyTo = fd.replyTo;
+    next.email.provider = fd.provider;
+    next.cdn.cloudflareZone = fd.cloudflareZone;
+    next.cdn.defaultTtlSeconds = Number(fd.defaultTtlSeconds);
+    next.cdn.cacheBustPrefix = fd.cacheBustPrefix;
+    next.infra.apiHost = fd.apiHost;
+    next.infra.websocketHost = fd.websocketHost;
+    next.infra.dokployUrl = fd.dokployUrl;
+    Object.keys(next.flags).forEach(k => { next.flags[k] = fd['flag:' + k] === 'on'; });
+    save(next);
+    sindoToast('Platform settings saved');
+  });
+}
+
+function flagDesc(k) {
+  return ({
+    selfServeTenantOnboarding: 'Tenants can sign up and create their own shop without operator help',
+    multiCurrencyDisplay: 'Show SGD + USD prices side by side on storefront',
+    catalogAiTagging: 'Auto-suggest categories + tags from product titles',
+    shopCustomDomain: 'Tenants on Growth+ can use their own domain',
+    webhookRetries: 'Auto-retry failed webhook deliveries (max 5)',
+    autoConfirmPaidOrders: 'Auto-mark orders as paid on Stripe payment_intent.succeeded'
+  })[k] || '';
+}
+
+render();
+</script>
+</body>
+</html>

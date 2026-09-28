@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit log · Katalog.id Console</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#c4476a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c4476a'/%3E%3Ctext x='50' y='68' font-family='system-ui' font-size='56' font-weight='700' fill='white' text-anchor='middle'%3EK%3C/text%3C/svg%3E">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="/design-system.css?v=v2.8">
+<link rel="stylesheet" href="/admin.css?v=v2.8">
+</head>
+<body data-page-title="Audit log" data-page-subtitle="Every platform-admin and tenant-owner action — immutable, exportable." data-console="true">
+<div id="admin-root"></div>
+
+<script src="/admin-shell.js?v=v2.8"></script>
+<script>
+function escape(s) {
+  return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+const SEED_LOG = [
+  { ts: '2026-09-28T13:46:02Z', actor: 'platform@seeds.com', action: 'tenant.provision', target: 'katalog-prod', tenant: 'katalog-prod', ip: '84.247.174.141', meta: { tier: 'enterprise' } },
+  { ts: '2026-09-28T13:30:18Z', actor: 'platform@seeds.com', action: 'tenant.update', target: 'sindo', tenant: 'sindo', ip: '84.247.174.141', meta: { field: 'mrr', old: 79, new: 89 } },
+  { ts: '2026-09-28T09:14:55Z', actor: 'owner@seeds.scaleupcrm.com', action: 'order.status_change', target: 'SINDO-5T2Q8B', tenant: 'sindo', ip: '203.0.113.42', meta: { from: 'pending', to: 'paid' } },
+  { ts: '2026-09-28T03:42:11Z', actor: 'owner@seeds.scaleupcrm.com', action: 'order.create', target: 'SINDO-5T2Q8B', tenant: 'sindo', ip: '203.0.113.42', meta: { totalSgd: 43.87 } },
+  { ts: '2026-09-27T22:18:04Z', actor: 'owner@seeds.scaleupcrm.com', action: 'product.update', target: 'now-mag-glyc-180', tenant: 'sindo', ip: '203.0.113.42', meta: { field: 'priceSgd', old: 28.99, new: 30.88 } },
+  { ts: '2026-09-27T14:02:33Z', actor: 'platform@seeds.com', action: 'tenant.suspend', target: 'demo-store', tenant: 'demo-store', ip: '84.247.174.141', meta: { reason: 'payment_failed_30d' } },
+  { ts: '2026-09-26T16:18:09Z', actor: 'owner@seeds.scaleupcrm.com', action: 'settings.update', target: 'shipping', tenant: 'sindo', ip: '203.0.113.42', meta: { field: 'ratePer100gSgd', old: 2.5, new: 3 } },
+  { ts: '2026-09-26T11:55:21Z', actor: 'demo+kb@sindo.id', action: 'tenant.create', target: 'kbeauty', tenant: 'kbeauty', ip: '203.0.113.45', meta: { tier: 'starter' } },
+  { ts: '2026-09-25T18:33:40Z', actor: 'platform@seeds.com', action: 'platform.config_change', target: 'rate_limits', tenant: null, ip: '84.247.174.141', meta: { rate: '30r/s store' } },
+  { ts: '2026-09-23T08:42:01Z', actor: 'owner@seeds.scaleupcrm.com', action: 'tenant.login', target: 'sindo', tenant: 'sindo', ip: '203.0.113.42', meta: {} }
+];
+
+let log = [...SEED_LOG];
+let filter = { q: '', action: '', actor: '', since: '' };
+
+function render() {
+  const actions = [...new Set(log.map(e => e.action))].sort();
+
+  const filtered = log.filter(e => {
+    if (filter.q) {
+      const q = filter.q.toLowerCase();
+      const hay = `${e.actor} ${e.target} ${e.tenant} ${e.ip} ${JSON.stringify(e.meta)}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (filter.action && e.action !== filter.action) return false;
+    if (filter.actor && e.actor !== filter.actor) return false;
+    if (filter.since && new Date(e.ts) < new Date(filter.since)) return false;
+    return true;
+  });
+
+  const rows = filtered.map(e => {
+    const kind = e.action.startsWith('tenant.suspend') ? 'low'
+      : e.action.includes('delete') || e.action.includes('cancel') ? 'low'
+      : e.action.includes('create') || e.action.includes('provision') ? 'shipped'
+      : e.action.includes('login') ? 'paid'
+      : 'pending';
+    return `
+      <tr>
+        <td class="mono" style="font-size:11px;white-space:nowrap;">${new Date(e.ts).toISOString().slice(0, 19).replace('T', ' ')}</td>
+        <td>${escape(e.actor)}</td>
+        <td><span class="adm-status ${kind}">${escape(e.action)}</span></td>
+        <td><span class="mono" style="font-size:12px;">${escape(e.target || '—')}</span></td>
+        <td><span class="adm-tag">${escape(e.tenant || 'platform')}</span></td>
+        <td class="mono" style="font-size:11px;">${escape(e.ip)}</td>
+        <td><code style="font-size:11px;color:var(--c-text-muted);">${escape(JSON.stringify(e.meta))}</code></td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('xmain').innerHTML = `
+    <div class="admin-grid-stats">
+      <div class="admin-stat"><div class="label">Events (24h)</div><div class="num">${log.filter(e => Date.now() - new Date(e.ts).getTime() < 86400000).length}</div></div>
+      <div class="admin-stat"><div class="label">Events (7d)</div><div class="num">${log.filter(e => Date.now() - new Date(e.ts).getTime() < 7 * 86400000).length}</div></div>
+      <div class="admin-stat"><div class="label">Total events</div><div class="num">${log.length}</div></div>
+      <div class="admin-stat"><div class="label">Distinct actors</div><div class="num">${[...new Set(log.map(e => e.actor))].length}</div></div>
+    </div>
+
+    <div class="row mb-4" style="gap:8px;justify-content:flex-end;">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">↓ Export CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportJSON()">{ } Export JSON</button>
+    </div>
+
+    <div class="adm-filters">
+      <input type="search" id="a-search" placeholder="Search actor, target, IP, meta…" class="input adm-search" value="${escape(filter.q)}" oninput="setFilter('q', this.value)">
+      <select id="a-action" class="input" style="width:200px;" onchange="setFilter('action', this.value)">
+        <option value="">All actions</option>
+        ${actions.map(a => `<option ${filter.action === a ? 'selected' : ''}>${escape(a)}</option>`).join('')}
+      </select>
+      <select id="a-actor" class="input" style="width:240px;" onchange="setFilter('actor', this.value)">
+        <option value="">All actors</option>
+        ${[...new Set(log.map(e => e.actor))].sort().map(a => `<option ${filter.actor === a ? 'selected' : ''}>${escape(a)}</option>`).join('')}
+      </select>
+      <input type="date" id="a-since" class="input" style="width:160px;" value="${filter.since}" onchange="setFilter('since', this.value)">
+    </div>
+
+    <div class="adm-card" style="overflow:hidden;">
+      <table class="adm-table">
+        <thead>
+          <tr><th>Timestamp (UTC)</th><th>Actor</th><th>Action</th><th>Target</th><th>Tenant</th><th>IP</th><th>Metadata</th></tr>
+        </thead>
+        <tbody>${rows || `<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--c-text-muted);">No events match filters</td></tr>`}</tbody>
+      </table>
+    </div>
+
+    <div class="adm-card admin-mt-6" style="background: var(--c-surface-2);">
+      <div class="adm-card-body" style="padding:20px;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="font-size:24px;">🛡️</div>
+          <div style="flex:1;font-size:13px;">
+            <strong>Immutable audit trail:</strong> All entries are signed with HMAC-SHA256 and chained via SHA-256 hash links (each event's hash includes the previous event's hash). Tampering breaks the chain and is detectable on the next verification cycle.
+            <br><br>
+            <strong>Retention:</strong> 90 days hot · 1 year cold · 7 years archive.
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.setFilter = function(key, value) {
+  filter[key] = value;
+  render();
+};
+
+window.exportCSV = function() {
+  const cols = ['ts', 'actor', 'action', 'target', 'tenant', 'ip', 'meta'];
+  const csv = cols.join(',') + '\n' + log.map(e => cols.map(c => {
+    const v = c === 'meta' ? JSON.stringify(e[c]) : e[c] ?? '';
+    return `"${String(v).replace(/"/g, '""')}"`;
+  }).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `audit-log-${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  sindoToast(`Exported ${log.length} events`);
+};
+
+window.exportJSON = function() {
+  const blob = new Blob([JSON.stringify(log, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `audit-log-${Date.now()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  sindoToast(`Exported ${log.length} events`);
+};
+
+render();
+</script>
+</body>
+</html>
