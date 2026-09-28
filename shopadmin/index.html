@@ -42,7 +42,7 @@
   // ── Aggregate metrics ──
   const totalRev = allOrders.reduce((s, o) => s + o.totalSgd, 0);
   const pendingOrders = allOrders.filter(o => o.status === 'paid').length;
-  const inTransitOrders = allOrders.filter(o => ['shipped', 'transit'].includes(o.status)).length);
+  const inTransitOrders = allOrders.filter(o => ['shipped', 'transit'].includes(o.status)).length;
   const uniqueCustomers = new Set(allOrders.map(o => o.email)).size;
 
   // Pull product catalog for sold-items
