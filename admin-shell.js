@@ -135,7 +135,7 @@
             ${pageActions}
           </div>
         </div>
-        <div id="page-root"></div>
+        <div id="xmain"></div>
       </main>
     </div>
   `;
