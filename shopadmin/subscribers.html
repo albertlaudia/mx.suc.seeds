@@ -10,13 +10,13 @@
 <link rel="manifest" href="https://seeds.scaleupcrm.com/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://seeds.scaleupcrm.com/design-system.css?v=v2.7">
-<link rel="stylesheet" href="https://seeds.scaleupcrm.com/admin.css?v=v2.7">
+<link rel="stylesheet" href="https://seeds.scaleupcrm.com/design-system.css?v=v2.8">
+<link rel="stylesheet" href="https://seeds.scaleupcrm.com/admin.css?v=v2.8">
 </head>
 <body data-page-title="Newsletter subscribers" data-page-subtitle="People who signed up for the 10% welcome discount.">
 <div id="admin-root"></div>
 
-<script src="https://seeds.scaleupcrm.com/admin-shell.js?v=v2.7"></script>
+<script src="https://seeds.scaleupcrm.com/admin-shell.js?v=v2.8"></script>
 <script>
 function escape(s) {
   return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -37,7 +37,7 @@ function render() {
     </tr>
   `).join('');
 
-  document.getElementById('admin-content').innerHTML = `
+  document.getElementById('xmain').innerHTML = `
     <div class="admin-grid-stats">
       <div class="admin-stat"><div class="label">Total subscribers</div><div class="num">${SUBSCRIBERS.length}</div></div>
       <div class="admin-stat"><div class="label">This week</div><div class="num">${SUBSCRIBERS.filter(s => Date.now() - new Date(s.at).getTime() < 7 * 86400000).length}</div></div>

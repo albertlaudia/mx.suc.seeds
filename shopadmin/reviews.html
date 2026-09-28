@@ -10,13 +10,13 @@
 <link rel="manifest" href="https://seeds.scaleupcrm.com/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://seeds.scaleupcrm.com/design-system.css?v=v2.7">
-<link rel="stylesheet" href="https://seeds.scaleupcrm.com/admin.css?v=v2.7">
+<link rel="stylesheet" href="https://seeds.scaleupcrm.com/design-system.css?v=v2.8">
+<link rel="stylesheet" href="https://seeds.scaleupcrm.com/admin.css?v=v2.8">
 </head>
 <body data-page-title="Reviews" data-page-subtitle="Approve, reply to, or remove customer reviews.">
 <div id="admin-root"></div>
 
-<script src="https://seeds.scaleupcrm.com/admin-shell.js?v=v2.7"></script>
+<script src="https://seeds.scaleupcrm.com/admin-shell.js?v=v2.8"></script>
 <script>
 function escape(s) {
   return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -54,7 +54,7 @@ function render() {
     ? (reviews.reduce((s, r) => s + (r.rating || 5), 0) / reviews.length).toFixed(1)
     : '—';
 
-  document.getElementById('admin-content').innerHTML = `
+  document.getElementById('xmain').innerHTML = `
     <div class="admin-grid-stats">
       <div class="admin-stat"><div class="label">Total reviews</div><div class="num">${reviews.length}</div></div>
       <div class="admin-stat"><div class="label">Avg rating</div><div class="num">${avg}</div></div>

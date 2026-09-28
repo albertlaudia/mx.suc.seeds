@@ -10,13 +10,13 @@
 <link rel="manifest" href="https://seeds.scaleupcrm.com/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
-<link rel="stylesheet" href="https://seeds.scaleupcrm.com/design-system.css?v=v2.7">
-<link rel="stylesheet" href="https://seeds.scaleupcrm.com/admin.css?v=v2.7">
+<link rel="stylesheet" href="https://seeds.scaleupcrm.com/design-system.css?v=v2.8">
+<link rel="stylesheet" href="https://seeds.scaleupcrm.com/admin.css?v=v2.8">
 </head>
 <body data-page-title="Billing &amp; subscription tiers" data-page-subtitle="Configure monthly plans, take rates, and overage limits." data-console="true">
 <div id="admin-root"></div>
 
-<script src="https://seeds.scaleupcrm.com/admin-shell.js?v=v2.7"></script>
+<script src="https://seeds.scaleupcrm.com/admin-shell.js?v=v2.8"></script>
 <script>
 function escape(s) {
   return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -48,7 +48,7 @@ function render() {
     </div>
   `).join('');
 
-  document.getElementById('admin-content').innerHTML = `
+  document.getElementById('xmain').innerHTML = `
     <div class="admin-grid-3">
       ${cardsHtml}
     </div>

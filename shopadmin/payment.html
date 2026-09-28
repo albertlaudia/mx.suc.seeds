@@ -10,13 +10,13 @@
 <link rel="manifest" href="https://seeds.scaleupcrm.com/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://seeds.scaleupcrm.com/design-system.css?v=v2.7">
-<link rel="stylesheet" href="https://seeds.scaleupcrm.com/admin.css?v=v2.7">
+<link rel="stylesheet" href="https://seeds.scaleupcrm.com/design-system.css?v=v2.8">
+<link rel="stylesheet" href="https://seeds.scaleupcrm.com/admin.css?v=v2.8">
 </head>
 <body data-page-title="Payment methods" data-page-subtitle="Accept manual bank transfer, Stripe, or both.">
 <div id="admin-root"></div>
 
-<script src="https://seeds.scaleupcrm.com/admin-shell.js?v=v2.7"></script>
+<script src="https://seeds.scaleupcrm.com/admin-shell.js?v=v2.8"></script>
 <script>
 function escape(s) {
   return (s ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -45,7 +45,7 @@ function save(s) {
 
 function render() {
   const s = load();
-  document.getElementById('admin-content').innerHTML = `
+  document.getElementById('xmain').innerHTML = `
     <div class="admin-grid-2">
       <!-- Bank transfer -->
       <div class="adm-card">
