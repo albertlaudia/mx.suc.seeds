@@ -654,7 +654,7 @@ function renderTrack() {
           <li><code>SS-202609-DEMO1</code> — Delivered</li>
           <li><code>SS-202609-DEMO2</code> — Out for delivery</li>
           <li><code>SS-202609-DEMO3</code> — Indonesia Customs (Batam)</li>
-          <li>Any other number — deterministic hash fallback to one of 6 stages</li>
+          <li>Any other number — deterministic hash fallback to one of 5 stages</li>
         </ul>
       </div>
     </div>

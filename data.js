@@ -9,7 +9,7 @@ window.PRODUCTS = [
     "id": "now-mag-glyc-180",
     "brand": "NOW Foods",
     "title": "NOW Foods, Magnesium Glycinate, 180 Tablets (100 mg per Tablet)",
-    "category": "Magnesium Glycinate",
+    "category": "Minerals",
     "priceSgd": 30.88,
     "rating": 4.8,
     "reviews": 43413,
@@ -27,7 +27,7 @@ window.PRODUCTS = [
     "id": "now-mag-glyc-90",
     "brand": "NOW Foods",
     "title": "NOW Foods, Magnesium Glycinate, 90 Tablets (100 mg per Tablet)",
-    "category": "Magnesium Glycinate",
+    "category": "Minerals",
     "priceSgd": 17.34,
     "rating": 4.8,
     "reviews": 43179,
@@ -45,7 +45,7 @@ window.PRODUCTS = [
     "id": "now-mag-glyc-bp",
     "brand": "NOW Foods",
     "title": "NOW Foods, Magnesium Glycinate With BioPerine\u00ae, 60 Veg Capsules",
-    "category": "Magnesium Glycinate",
+    "category": "Minerals",
     "priceSgd": 14.43,
     "rating": 4.8,
     "reviews": 6693,
@@ -99,7 +99,7 @@ window.PRODUCTS = [
     "id": "cgn-gold-c-powder",
     "brand": "California Gold Nutrition",
     "title": "California Gold Nutrition, Gold C\u00ae Powder, USP Grade Vitamin C, 8.81 oz (250 g)",
-    "category": "Vitamin C",
+    "category": "Vitamins",
     "priceSgd": 13.86,
     "rating": 4.8,
     "reviews": 6200,
@@ -117,7 +117,7 @@ window.PRODUCTS = [
     "id": "cgn-buffered-gold-c",
     "brand": "California Gold Nutrition",
     "title": "California Gold Nutrition, Buffered Gold C\u00ae, Non-Acidic Vitamin C Powder, Sodium Ascorbate, 8.4 oz (238 g)",
-    "category": "Vitamin C",
+    "category": "Vitamins",
     "priceSgd": 19.64,
     "rating": 4.7,
     "reviews": 4400,
@@ -209,10 +209,10 @@ window.CATEGORIES = [
   "Beauty & Skin",
   "Bone & Joint",
   "Herbal",
-  "Magnesium Glycinate",
+  "Minerals",
   "Prenatal",
   "Sleep & Relaxation",
-  "Vitamin C"
+  "Vitamins"
 ];
 
 window.BRANDS = [

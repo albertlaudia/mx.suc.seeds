@@ -372,6 +372,20 @@ img { color: transparent; }
   .grid-2 { grid-template-columns: 1fr; }
   .track-bar { flex-direction: column; }
   .step-line { display: none; }
+  /* Mobile product card: compact image, contained */
+  .card .thumb,
+  .card .img,
+  .card > div:first-child { height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fafafa; }
+  .card .thumb img,
+  .card .img img { max-height: 200px; max-width: 100%; width: auto; height: auto; object-fit: contain; }
+  .card .info { padding: 12px; }
+  .card .title { font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; word-break: break-word; }
+  .card .brand { font-size: 11px; margin-bottom: 4px; }
+  .card .rating { font-size: 12px; margin-bottom: 4px; }
+  .card .price { font-size: 16px; margin-bottom: 8px; }
+  .card .btn-add { padding: 8px 12px; font-size: 13px; }
+  /* 404 page — don't be enormous on mobile */
+  .not-found h1 { font-size: 64px; }
 }
 
 /* ─── Static pages (about, faq, shipping, returns, privacy, terms, contact) ─ */
@@ -386,6 +400,10 @@ img { color: transparent; }
 .static-page details[open] summary { margin-bottom: 8px; }
 .static-page ul, .static-page ol { padding-left: 22px; }
 .static-page a { color: #d23f3f; }
+.static-page a.btn-primary,
+.static-page a.btn-primary:visited,
+.static-page a.btn-secondary,
+.static-page a.btn-secondary:visited { color: white; }
 .back-link { display: inline-block; margin-bottom: 16px; color: #6b7280; font-size: 14px; text-decoration: none; }
 .back-link:hover { color: #d23f3f; }
 .meta { color: #6b7280; font-size: 13px; margin-bottom: 16px; }

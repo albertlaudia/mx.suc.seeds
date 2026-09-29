@@ -362,6 +362,11 @@ input, textarea, select { font: inherit; color: inherit; }
 /* ── Responsive ── */
 @media (max-width: 720px) {
   :root { --fs-5xl: 44px; --fs-4xl: 32px; --fs-3xl: 26px; }
-  .topbar-inner { gap: var(--sp-3); padding: 0 var(--sp-4); height: 56px; }
+  .topbar-inner { gap: var(--sp-3); padding: 0 var(--sp-4); height: 56px; flex-wrap: nowrap; }
   .topbar-search { display: none; }
+  .topbar-brand { font-size: var(--fs-base); white-space: nowrap; flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-inner .nav-cat,
+  .topbar-inner > nav:not(.topbar-actions) { display: none; }
+  .topbar-actions { margin-left: auto; gap: var(--sp-1); }
+  /* Header on dashboard / wishlist — single row, no nav */
 }
