@@ -400,10 +400,9 @@ img { color: transparent; }
 .static-page details[open] summary { margin-bottom: 8px; }
 .static-page ul, .static-page ol { padding-left: 22px; }
 .static-page a { color: #d23f3f; }
+/* Only override btn-primary (white-on-red); let btn-secondary keep its natural red text on white */
 .static-page a.btn-primary,
-.static-page a.btn-primary:visited,
-.static-page a.btn-secondary,
-.static-page a.btn-secondary:visited { color: white; }
+.static-page a.btn-primary:visited { color: white; }
 .back-link { display: inline-block; margin-bottom: 16px; color: #6b7280; font-size: 14px; text-decoration: none; }
 .back-link:hover { color: #d23f3f; }
 .meta { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
