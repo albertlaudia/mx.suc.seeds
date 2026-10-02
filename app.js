@@ -115,6 +115,14 @@ function renderHeader() {
 // ─── Product card (shared) ──────────────────────────────────────────────────
 function productCard(p) {
   const img = p.image || "";
+  // Compute badge based on attributes (top by reviews = Best Seller)
+  const badges = [];
+  if (p.reviews >= 40000) badges.push({ text: 'Best Seller', cls: 'badge-bestseller' });
+  if (p.rating >= 4.8) badges.push({ text: 'Top Rated', cls: 'badge-toprated' });
+  // (Sale tag would come from p.sale — for now no products on sale)
+  const badgeHtml = badges.length
+    ? `<div class="card-badges">${badges.map(b => `<span class="card-badge ${b.cls}">${b.text}</span>`).join('')}</div>`
+    : '';
   return `
     <div class="card" data-go-product="${escapeHtml(p.id)}">
       <div class="thumb">
@@ -123,10 +131,14 @@ function productCard(p) {
         <button class="wishlist-heart" data-wishlist-product="${escapeHtml(p.id)}" aria-label="Save to wishlist" aria-pressed="false">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9.5C1 8.5 3 5 6 5c2 0 3 1 4 2.5C11 6 12 5 14 5c3 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>
         </button>
+        <button class="quick-add" data-add-cart="${escapeHtml(p.id)}" aria-label="Quick add to cart" title="Quick add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        ${badgeHtml}
       </div>
       <div class="info">
         <div class="brand">${escapeHtml(p.brand)}</div>
-        <div class="title">${escapeHtml(p.title)}</div>
+        <div class="title" title="${escapeHtml(p.title)}">${escapeHtml(p.title.length > 60 ? p.title.slice(0, 57) + '…' : p.title)}</div>
         <div class="rating">★ ${p.rating} <span class="reviews">(${p.reviews.toLocaleString("en-US")})</span></div>
         <div class="price">${formatPriceDual(p)}</div>
         <div class="actions">
@@ -197,7 +209,7 @@ function bindCardEvents() {
 function renderProduct() {
   renderHeader();
   const params = new URLSearchParams(location.search);
-  const id = params.get("id");
+  const id = params.get("id") || params.get("itemId");
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) {
     document.querySelector("main").innerHTML = `
@@ -208,6 +220,14 @@ function renderProduct() {
       </div>`;
     return;
   }
+
+  // Track recently-viewed (capped at 8)
+  try {
+    const KEY = 'sindo_recently_viewed_v1';
+    let recent = JSON.parse(localStorage.getItem(KEY) || '[]');
+    recent = [p.id, ...recent.filter(x => x !== p.id)].slice(0, 8);
+    localStorage.setItem(KEY, JSON.stringify(recent));
+  } catch {}
   // Truncate long product names in title to keep <65 chars for SEO
   const fullTitle = `${p.title} · Sindo Wellness`;
   document.title = fullTitle.length > 60 ? fullTitle.slice(0, 57) + "..." : fullTitle;

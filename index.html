@@ -88,6 +88,21 @@
 </head>
 <body class="landing">
 
+<!-- ─── Cookie consent banner ─────────────────────────────────────────── -->
+<div class="cookie-banner" id="cookie-banner" hidden>
+  <div class="container cookie-inner">
+    <div class="cookie-text">
+      <strong>This website uses cookies.</strong>
+      We use necessary cookies for cart, wishlist, and order tracking. Analytics cookies (Plausible) help us improve.
+      <a href="privacy.html">Learn more</a>
+    </div>
+    <div class="cookie-actions">
+      <button class="cookie-link" id="cookie-decline" type="button">Decline analytics</button>
+      <button class="cookie-accept" id="cookie-accept" type="button">Accept all</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── Top promo strip (rotating) ────────────────────────────────────── -->
 <div class="promo-strip" id="promo-strip" aria-live="polite">
   <div class="promo-track" id="promo-track">
@@ -110,7 +125,7 @@
       </button>
       <a href="index.html" class="brand" aria-label="Sindo home">
         <span class="brand-mark">Sindo</span>
-        <small class="brand-sub">Authentic · Shipped from Singapore</small>
+        <small class="brand-sub">SG · Authentic</small>
       </a>
 
       <form class="header-search" id="header-search-form" role="search" action="search.html" method="get">
@@ -294,6 +309,25 @@
       <button class="section-link" onclick="window.sindoClearRecent?.()">Clear</button>
     </div>
     <div class="rv-strip" id="rv-strip"></div>
+  </div>
+</section>
+
+<!-- ─── Recommended for you (personalized) ─────────────────────────── -->
+<section class="section rec-section" id="section-rec">
+  <div class="container">
+    <div class="rec-grid">
+      <div class="rec-side">
+        <span class="eyebrow">Personalized for you</span>
+        <h2 class="rec-title">Recommended<br>for you</h2>
+        <p class="rec-sub">Based on your browsing history, price range, and what similar shoppers re-order. Updates every time you open the page.</p>
+        <ul class="rec-stats">
+          <li><strong>2,184</strong><span>verified buyers</span></li>
+          <li><strong>4.8/5</strong><span>avg satisfaction</span></li>
+          <li><strong>23</strong><span>countries served</span></li>
+        </ul>
+      </div>
+      <div class="rec-strip" id="rec-strip"></div>
+    </div>
   </div>
 </section>
 
@@ -645,8 +679,8 @@
 </script>
 
 <!-- ─── Scripts (deferred) ────────────────────────────────────────────── -->
-<script src="data.js?v=v6.9.6" defer></script>
-<script src="app.js?v=v6.9.6" defer></script>
+<script src="data.js?v=v6.9.7" defer></script>
+<script src="app.js?v=v6.9.7" defer></script>
 <script src="widgets.js?v=v2.9" defer></script>
 <script src="/landing.js?v=v1.0" defer></script>
 

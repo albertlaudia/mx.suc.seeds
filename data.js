@@ -212,7 +212,8 @@ window.CATEGORIES = [
   "Minerals",
   "Prenatal",
   "Sleep & Relaxation",
-  "Vitamins"
+  "Vitamins",
+  "Bath & Personal Care"
 ];
 
 window.BRANDS = [
