@@ -151,22 +151,31 @@ function renderHome() {
   const banner = document.getElementById("prod-count");
   if (banner) banner.textContent = `${PRODUCTS.length}`;
   const ts = document.getElementById("extract-time");
-  if (ts) ts.textContent = `${EXTRACT_INFO.extractedAt} · snapshot ${EXTRACT_INFO.snapshotId}`;
+  if (ts) ts.textContent = `snapshot ${EXTRACT_INFO.snapshotId} · ${EXTRACT_INFO.extractedAt}`;
 
-  const featured = [...PRODUCTS].sort((a, b) => b.priceSgd - a.priceSgd).slice(0, 3);
-  document.getElementById("featured").innerHTML = featured.map(productCard).join("");
+  // Best sellers — 6 products, sorted by review count (proxy for popularity)
+  const featuredEl = document.getElementById("featured");
+  if (featuredEl) {
+    const best = [...PRODUCTS].sort((a, b) => (b.reviews || 0) - (a.reviews || 0)).slice(0, 6);
+    featuredEl.innerHTML = best.map(productCard).join("");
+  }
 
-  document.getElementById("cats").innerHTML = CATEGORIES.map(cat => {
-    const items = PRODUCTS.filter(p => p.category === cat).sort((a, b) => b.priceSgd - a.priceSgd);
-    return `
-      <section class="cat" id="cat-${slugify(cat)}">
-        <h2 class="cat-title">${escapeHtml(cat)} <span class="muted">(${items.length})</span></h2>
-        <div class="grid">${items.map(productCard).join("")}</div>
-      </section>`;
-  }).join("");
+  // Categories (legacy list at bottom — only when #cats exists)
+  const catsEl = document.getElementById("cats");
+  if (catsEl) {
+    catsEl.innerHTML = CATEGORIES.map(cat => {
+      const items = PRODUCTS.filter(p => p.category === cat).sort((a, b) => b.priceSgd - a.priceSgd);
+      return `
+        <section class="cat" id="cat-${slugify(cat)}">
+          <h2 class="cat-title">${escapeHtml(cat)} <span class="muted">(${items.length})</span></h2>
+          <div class="grid">${items.map(productCard).join("")}</div>
+        </section>`;
+    }).join("");
+  }
 
   bindCardEvents();
   updateCartBadge();
+  attachWishlistHearts(document);
 }
 
 function bindCardEvents() {
