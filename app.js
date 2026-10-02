@@ -123,18 +123,27 @@ function productCard(p) {
   const badgeHtml = badges.length
     ? `<div class="card-badges">${badges.map(b => `<span class="card-badge ${b.cls}">${b.text}</span>`).join('')}</div>`
     : '';
+  // Stable random stock level (8-50) — would come from real inventory
+  const stock = p.stock ?? (8 + (p.id.charCodeAt(0) % 23));
+  const stockHtml = stock < 12
+    ? `<div class="stock-low ${stock < 6 ? 'critical' : ''}">${stock < 6 ? 'Only ' + stock + ' left' : stock + ' left'}</div>`
+    : '';
   return `
-    <div class="card" data-go-product="${escapeHtml(p.id)}">
+    <div class="card" data-go-product="${escapeHtml(p.id)}" data-quickview="${escapeHtml(p.id)}">
       <div class="thumb">
         <img ${lazyImgAttrs()} src="${img}" alt="${escapeHtml(p.title)}" onerror="this.parentNode.innerHTML='<div class=no-img>no image</div>'"/>
         <div class="src-badge">Source</div>
+        ${badgeHtml}
+        ${stockHtml}
         <button class="wishlist-heart" data-wishlist-product="${escapeHtml(p.id)}" aria-label="Save to wishlist" aria-pressed="false">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9.5C1 8.5 3 5 6 5c2 0 3 1 4 2.5C11 6 12 5 14 5c3 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg>
         </button>
         <button class="quick-add" data-add-cart="${escapeHtml(p.id)}" aria-label="Quick add to cart" title="Quick add">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
-        ${badgeHtml}
+        <button class="qv-btn" data-quickview="${escapeHtml(p.id)}" aria-label="Quick view" title="Quick view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
       </div>
       <div class="info">
         <div class="brand">${escapeHtml(p.brand)}</div>
@@ -194,6 +203,12 @@ function bindCardEvents() {
   document.querySelectorAll("[data-go-product]").forEach(el => {
     el.onclick = (e) => {
       if (e.target.closest("[data-add-cart]")) return;
+      if (e.target.closest(".wishlist-heart")) return;
+      if (e.target.closest(".quick-add")) return;
+      if (e.target.closest(".qv-btn")) return;
+      // Cards on the landing page carry data-quickview → let landing.js' click
+      // listener open the modal (it calls preventDefault + stopPropagation).
+      if (el.dataset.quickview) return;
       window.location.href = `product.html?id=${el.dataset.goProduct}`;
     };
   });

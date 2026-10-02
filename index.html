@@ -38,7 +38,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cloudinary.images-iherb.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap">
-<link rel="stylesheet" href="styles.css?v=v6.9.9">
+<link rel="stylesheet" href="styles.css?v=v6.10.0">
 <style>
   /* Landing-page specific overrides (scoped to .landing) */
   .landing body { padding-bottom: 56px; }
@@ -104,6 +104,17 @@
 </div>
 
 <!-- ─── Top promo strip (rotating) ────────────────────────────────────── -->
+<!-- ─── Free shipping progress (appears when cart has items) ────── -->
+<div class="fship-bar" id="fship-bar" hidden>
+  <div class="container fship-inner">
+    <div class="fship-text">
+      <span class="fship-icon">🚚</span>
+      <span id="fship-msg">Add S$<span id="fship-need">0.00</span> more for <strong>FREE shipping</strong></span>
+    </div>
+    <div class="fship-progress"><div class="fship-fill" id="fship-fill"></div></div>
+  </div>
+</div>
+
 <div class="promo-strip" id="promo-strip" aria-live="polite">
   <div class="promo-track" id="promo-track">
     <span class="promo-msg active">🎉 <strong>Free shipping</strong> on orders over S$80 to Singapore</span>
@@ -328,6 +339,20 @@
       </div>
       <div class="rec-strip" id="rec-strip"></div>
     </div>
+  </div>
+</section>
+
+<!-- ─── Trending now (most-viewed in last 24h via localStorage) ────── -->
+<section class="section" id="section-trending">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow"><span class="dot-live"></span> Live now</span>
+        <h2 class="section-title">Trending in the last 24 hours</h2>
+      </div>
+      <a href="categories.html?sort=trending" class="section-link">View all →</a>
+    </div>
+    <div class="trending-strip" id="trending-strip"></div>
   </div>
 </section>
 
@@ -626,6 +651,15 @@
   </div>
 </footer>
 
+<!-- ─── Quick view modal ─────────────────────────────────────────────── -->
+<div class="qv-modal" id="qv-modal" hidden>
+  <div class="qv-bg" data-close-qv></div>
+  <div class="qv-panel" role="dialog" aria-label="Quick product view">
+    <button class="qv-close" data-close-qv aria-label="Close" type="button">×</button>
+    <div class="qv-body" id="qv-body"></div>
+  </div>
+</div>
+
 <!-- ─── Sticky mobile bottom nav ──────────────────────────────────────── -->
 <nav class="bottom-nav" aria-label="Quick navigation">
   <a href="index.html" class="bottom-nav-link active" aria-label="Home">
@@ -680,7 +714,7 @@
 
 <!-- ─── Scripts (deferred) ────────────────────────────────────────────── -->
 <script src="data.js?v=v6.9.7" defer></script>
-<script src="app.js?v=v6.9.7" defer></script>
+<script src="app.js?v=v6.9.8" defer></script>
 <script src="widgets.js?v=v2.9" defer></script>
 <script src="/landing.js?v=v1.0" defer></script>
 

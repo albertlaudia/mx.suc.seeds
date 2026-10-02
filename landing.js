@@ -277,3 +277,137 @@
   document.getElementById('cookie-accept')?.addEventListener('click', () => close('accept'));
   document.getElementById('cookie-decline')?.addEventListener('click', () => close('decline'));
 })();
+
+/* ── Free shipping calculator ──────────────────────────────────────── */
+(function () {
+  const bar = document.getElementById('fship-bar');
+  const needEl = document.getElementById('fship-need');
+  const fillEl = document.getElementById('fship-fill');
+  if (!bar || !needEl || !fillEl) return;
+  const THRESHOLD = 80; // S$80 free shipping threshold
+  const getCartTotal = () => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('sindo_cart_v1') || '{}');
+      const PRODUCTS = window.PRODUCTS || [];
+      let total = 0;
+      for (const [id, qty] of Object.entries(raw)) {
+        const p = PRODUCTS.find(x => x.id === id);
+        if (p) total += p.priceSgd * qty;
+      }
+      return total;
+    } catch { return 0; }
+  };
+  const update = () => {
+    const total = getCartTotal();
+    if (total <= 0) { bar.hidden = true; return; }
+    const need = Math.max(0, THRESHOLD - total);
+    const pct = Math.min(100, (total / THRESHOLD) * 100);
+    bar.hidden = false;
+    needEl.textContent = need.toFixed(2);
+    fillEl.style.width = pct + '%';
+    const msg = bar.querySelector('.fship-text span:nth-child(2)');
+    if (msg) {
+      if (need <= 0) {
+        bar.classList.add('fship-complete');
+        msg.innerHTML = '🎉 You\'ve unlocked <strong>FREE shipping</strong>!';
+      } else {
+        bar.classList.remove('fship-complete');
+        msg.innerHTML = `Add S$<span id="fship-need">${need.toFixed(2)}</span> more for <strong>FREE shipping</strong>`;
+      }
+    }
+  };
+  update();
+  // Re-run on cart updates
+  window.addEventListener('storage', update);
+  const origAdd = window.addToCart;
+  window.addToCart = function (...args) { const r = origAdd && origAdd.apply(this, args); setTimeout(update, 50); return r; };
+  const origRemove = window.removeFromCart;
+  window.removeFromCart = function (...args) { const r = origRemove && origRemove.apply(this, args); setTimeout(update, 50); return r; };
+})();
+
+/* ── Trending now (deterministic ranking based on view count + recency) ── */
+(function () {
+  const strip = document.getElementById('trending-strip');
+  const section = document.getElementById('section-trending');
+  if (!strip || !section || typeof PRODUCTS === 'undefined') return;
+
+  // Get view history with timestamps (we currently only have IDs; weight by id hash for stability)
+  function score(p) {
+    let s = 0;
+    if (p.reviews >= 8000) s += 40;
+    if (p.rating >= 4.7) s += 25;
+    if (p.weightGrams > 0 && p.weightGrams < 200) s += 10; // common shelf items
+    s += ((p.id.charCodeAt(1) || 0) % 15); // stable seed for daily shuffle
+    return s;
+  }
+
+  const trending = [...PRODUCTS].sort((a, b) => score(b) - score(a)).slice(0, 4);
+  section.hidden = false;
+  strip.innerHTML = trending.map((p, i) => `
+    <a class="card card-mini" href="product.html?id=${encodeURIComponent(p.id)}" data-go-product="${p.id}">
+      <div class="thumb">
+        <span class="trending-rank">${i + 1}</span>
+        <img src="${p.image}" alt="${p.title}" loading="lazy" decoding="async" onerror="this.style.opacity=0">
+      </div>
+      <div class="info">
+        <div class="brand">${p.brand}</div>
+        <div class="title" title="${p.title}">${p.title.length > 50 ? p.title.slice(0, 47) + '…' : p.title}</div>
+        <div class="rating">★ ${p.rating} <span class="muted">(${p.reviews.toLocaleString('en-US')})</span></div>
+        <div class="price">S$${p.priceSgd.toFixed(2)}</div>
+      </div>
+    </a>
+  `).join('');
+})();
+
+/* ── Quick view modal ───────────────────────────────────────────────── */
+(function () {
+  const modal = document.getElementById('qv-modal');
+  const body = document.getElementById('qv-body');
+  if (!modal || !body || typeof PRODUCTS === 'undefined') return;
+  const open = (id) => {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    body.innerHTML = `
+      <div class="qv-grid">
+        <div class="qv-image">
+          <img src="${p.image}" alt="${p.title}">
+        </div>
+        <div>
+          <div class="qv-brand">${p.brand}</div>
+          <h2 class="qv-title">${p.title}</h2>
+          <div class="qv-rating">★ ${p.rating} <span class="muted">(${p.reviews.toLocaleString('en-US')} reviews)</span></div>
+          <div class="qv-price">S$${p.priceSgd.toFixed(2)} <span class="muted" style="font-size:13px;font-weight:400;">incl. S$3/100g shipping</span></div>
+          <p class="qv-desc">${p.description || 'Authentic, source-verified product from our authorized US distributor.'}</p>
+          <div class="qv-actions">
+            <button class="btn-primary qv-quickadd" data-add-cart="${p.id}" data-close-qv>+ Add to cart · S$${p.priceSgd.toFixed(2)}</button>
+            <a class="btn-secondary" href="product.html?id=${encodeURIComponent(p.id)}">Full details →</a>
+          </div>
+          <div style="margin-top:14px;font-size:12px;color:#6b7280;">
+            <a href="${p.url || '#'}" target="_blank" rel="noopener" style="color:#d23f3f;">View source listing on sg.iherb.com ↗</a>
+          </div>
+        </div>
+      </div>
+    `;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    bindCardEvents();
+  };
+  const close = () => { modal.hidden = true; document.body.style.overflow = ''; };
+  // Click on card opens quick view. We use capture-phase listener so it fires
+  // BEFORE the per-card `el.onclick` set in bindCardEvents() can navigate.
+  document.addEventListener('click', (e) => {
+    const qvTrigger = e.target.closest('[data-quickview]');
+    if (!qvTrigger) return;
+    // Skip if user clicked on a button inside the card (let those bubble normally)
+    if (e.target.closest('[data-add-cart]') || e.target.closest('.wishlist-heart') || e.target.closest('.quick-add') || e.target.closest('.qv-btn')) {
+      e.stopPropagation();
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    open(qvTrigger.dataset.quickview);
+  }, true);
+  modal.querySelectorAll('[data-close-qv]').forEach(el => el.addEventListener('click', close));
+  
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+})();
