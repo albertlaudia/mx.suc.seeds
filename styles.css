@@ -69,18 +69,12 @@ img { color: transparent; }
 .meta-banner { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #0c4a6e; margin: 32px auto; text-align: center; }
 .meta-banner code { background: #e0f2fe; padding: 1px 5px; border-radius: 3px; font-size: 11px; }
 
-/* Shipping banner */
-.shipping-banner { background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%); color: white; padding: 64px 0; margin-top: 48px; }
-.shipping-banner h2 { font-size: 32px; font-weight: 800; margin: 8px 0; letter-spacing: -0.5px; }
-.sb-tag { display: inline-block; background: rgba(14,165,233,0.2); color: #7dd3fc; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; }
+/* Shipping banner — old dark styles removed, see landing overrides further below */
 .sb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
-.sb-grid p { color: #cbd5e1; font-size: 15px; margin-top: 12px; line-height: 1.6; }
-.sb-cta { display: inline-block; margin-top: 20px; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; }
-.sb-cta:hover { background: #0284c7; }
 .sb-stages { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.sb-stage { flex: 1; text-align: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px 6px; font-size: 12px; color: #cbd5e1; line-height: 1.4; }
-.sb-stage .num { display: inline-block; width: 28px; height: 28px; line-height: 28px; border-radius: 50%; background: #0ea5e9; color: white; font-weight: 700; margin-bottom: 8px; }
-.sb-arrow { color: #0ea5e9; font-size: 18px; font-weight: 700; flex: 0; }
+.sb-stage { flex: 1; text-align: center; border-radius: 10px; padding: 14px 6px; font-size: 12px; line-height: 1.4; }
+.sb-stage .num { display: inline-block; width: 28px; height: 28px; line-height: 28px; border-radius: 50%; color: white; font-weight: 700; margin-bottom: 8px; }
+.sb-arrow { font-size: 18px; font-weight: 700; flex: 0; }
 
 /* Product detail page */
 .pdp { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 24px; }
@@ -1278,3 +1272,69 @@ img { color: transparent; }
 /* ─── Force link reset on cards ──────────────────────────────────────── */
 a.card, a.card-mini, a[data-go-product] { color: inherit; text-decoration: none; }
 a.card:hover, a.card-mini:hover, a[data-go-product]:hover { color: inherit; }
+
+/* ─── Shipping section (light theme override) ────────────────────────── */
+.shipping-banner {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%) !important;
+  color: #1a1a1a !important;
+  padding: 56px 0;
+}
+.shipping-banner h2 { font-size: clamp(28px, 4vw, 36px); font-weight: 800; margin: 8px 0 14px; color: #1a1a1a; }
+.shipping-banner p { color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0; }
+.shipping-banner .sb-tag {
+  display: inline-block !important;
+  background: #d23f3f !important;
+  color: white !important;
+  padding: 4px 12px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1.4px !important;
+  margin-bottom: 14px !important;
+}
+.shipping-banner .sb-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+}
+.shipping-banner .sb-meta { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0 20px; }
+.shipping-banner .sb-meta span { font-size: 13px; color: #4b5563; padding: 6px 12px; background: white; border-radius: 8px; }
+.shipping-banner .sb-meta strong { color: #d23f3f; }
+.shipping-banner .sb-cta {
+  display: inline-block !important;
+  background: transparent !important;
+  color: #d23f3f !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  text-decoration: none !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  margin-top: 0 !important;
+}
+.shipping-banner .sb-cta:hover { text-decoration: underline !important; }
+.shipping-banner .sb-stages {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.shipping-banner .sb-stage {
+  flex: 1; text-align: center;
+  background: white;
+  border: 1px solid #fecaca;
+  color: #1a1a1a;
+  border-radius: 10px;
+  padding: 14px 6px;
+  font-size: 12px;
+}
+.shipping-banner .sb-stage .num {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 28px; height: 28px; line-height: 28px;
+  border-radius: 50%;
+  background: #d23f3f !important;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.shipping-banner .sb-arrow { color: #d23f3f !important; font-size: 18px; font-weight: 700; flex: 0; }
+@media (max-width: 720px) {
+  .shipping-banner .sb-grid { grid-template-columns: 1fr; gap: 24px; }
+  .shipping-banner .sb-stages { flex-wrap: wrap; }
+}
