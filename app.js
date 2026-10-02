@@ -123,9 +123,10 @@ function productCard(p) {
   const badgeHtml = badges.length
     ? `<div class="card-badges">${badges.map(b => `<span class="card-badge ${b.cls}">${b.text}</span>`).join('')}</div>`
     : '';
-  // Stable random stock level (8-50) — would come from real inventory
-  const stock = p.stock ?? (8 + (p.id.charCodeAt(0) % 23));
-  const stockHtml = stock < 12
+  // Stable random stock level (3-32) — would come from real inventory.
+  // Lower hash values to ensure most products look scarce, driving urgency.
+  const stock = p.stock ?? (3 + ((p.id.charCodeAt(0) + p.id.charCodeAt(p.id.length - 1)) % 22));
+  const stockHtml = stock < 14
     ? `<div class="stock-low ${stock < 6 ? 'critical' : ''}">${stock < 6 ? 'Only ' + stock + ' left' : stock + ' left'}</div>`
     : '';
   return `
