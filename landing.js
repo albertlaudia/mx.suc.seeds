@@ -1,6 +1,23 @@
 /* =============================================================
    Sindo Landing — interactive layer (header, promo, drawer, deal)
    ============================================================= */
+// renderHome() lives in app.js but isn't auto-called. Trigger it if the
+// page has the home-page slots (#featured or #cats) so Best Sellers
+// and Popular Lists render the real catalog.
+(function bootstrapRenderHome() {
+  function run() {
+    if (typeof window.renderHome !== 'function') return;
+    if (!document.getElementById('featured') && !document.getElementById('cats')) return;
+    try { window.renderHome(); } catch (e) { console.warn('renderHome failed', e); }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run, { once: true });
+  } else {
+    // Give app.js a tick to finish parsing before we call it
+    setTimeout(run, 0);
+  }
+})();
+
 (function () {
   'use strict';
 
