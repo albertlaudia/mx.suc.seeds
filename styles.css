@@ -1197,8 +1197,9 @@ img { color: transparent; }
   .rec-strip { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 560px) {
-  .rec-strip { grid-template-columns: 1fr; }
+  .rec-strip { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .rec-stats { flex-wrap: wrap; }
+  .rec-side h2 { font-size: 26px; }
 }
 
 /* ─── Cookie consent banner ─────────────────────────────────────────── */
